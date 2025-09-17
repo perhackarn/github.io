@@ -200,7 +200,7 @@
           {tab==="competitions" && <Competitions competitions={competitions} user={user} />}
           {tab==="shooters" && <Shooters shooters={shooters} user={user} />}
           {tab==="scores" && <Scores shooters={shooters} competitions={competitions} user={user} />}
-          {tab==="results" && <Results shooters={shooters} scores={scores} />}
+          {tab==="results" && <Results shooters={shooters} scores={scores} competitions={competitions} />}
         </div>
       );
     }
@@ -254,6 +254,13 @@
     }
 
     function Shooters({ shooters, user }) {
+      const [search, setSearch] = React.useState("");
+      const filteredShooters = shooters.filter(s =>
+        s.name.toLowerCase().includes(search.toLowerCase()) ||
+        s.club.toLowerCase().includes(search.toLowerCase()) ||
+        String(s.startNumber).includes(search)
+      );
+
       const [name, setName] = React.useState("");
       const [club, setClub] = React.useState("");
       const [klass, setKlass] = React.useState("öppen");
@@ -269,6 +276,8 @@
       return (
         <section>
           <h2 className="text-xl font-bold mb-3 text-blue-700 flex items-center gap-2"><span>🎯</span> Skyttar</h2>
+          <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Sök skytt, ort eller startnummer..."
+            className="border p-3 rounded-lg w-full mb-4 focus:ring-blue-400 focus:ring-2"/>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-2 mb-4">
             <input value={name} onChange={e=>setName(e.target.value)} placeholder="Namn"
               className="border p-3 rounded-lg focus:ring-blue-400 focus:ring-2"/>
@@ -283,7 +292,7 @@
           </div>
           {!user && <p className="text-red-500 text-sm mb-2">Logga in för att lägga till skyttar.</p>}
           <ul className="divide-y">
-            {shooters.map(s=>
+            {filteredShooters.map(s=>
               <li key={s.id} className="py-3 flex items-center justify-between text-sm">
                 <span><span className="font-bold text-blue-700">#{s.startNumber}</span> {s.name} <span className="text-gray-500">({s.club})</span></span>
                 <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">{s.klass}</span>
@@ -328,12 +337,18 @@
           </div>
           <div className="flex gap-2 mb-2 justify-center">
             {shots.map((v,i)=>(
-              <input key={i} type="number" min="0" max="10" value={v}
+              <input key={i} type="number" min="0" max="10"
+                value={v === 0 ? "" : v}
                 onChange={e=>{
-                  const ns=[...shots]; ns[i]=Number(e.target.value); setShots(ns);
+                  const ns=[...shots];
+                  ns[i]=e.target.value === "" ? 0 : Number(e.target.value);
+                  setShots(ns);
                 }}
                 className="border p-3 rounded-lg w-16 text-center font-semibold text-lg"/>
             ))}
+          </div>
+          <div className="text-lg font-bold text-blue-700 mb-2">
+            Summa: {shots.reduce((a,b)=>a+b,0)} poäng
           </div>
           <button onClick={saveScore}
             className={`bg-blue-500 text-white px-6 py-2 rounded-lg font-bold shadow transition ${!user ? "opacity-40 cursor-not-allowed" : ""}`}
@@ -343,15 +358,30 @@
       );
     }
 
-    function Results({ shooters, scores }) {
-      const grouped = {};
-      shooters.forEach(s=>{
-        const total = scores.filter(sc=>sc.shooterId===s.id).reduce((a,b)=>a+b.total,0);
-        if (!grouped[s.klass]) grouped[s.klass]=[];
-        grouped[s.klass].push({...s, total});
-      });
-      Object.keys(grouped).forEach(k=>grouped[k].sort((a,b)=>b.total-a.total));
+    // RESULTATLISTA MED VAL AV DELTÄVLING
+    function Results({ shooters, scores, competitions }) {
+      const [selectedCompetition, setSelectedCompetition] = React.useState(
+        competitions.length > 0 ? competitions[0].id : ""
+      );
 
+      React.useEffect(() => {
+        if (competitions.length > 0 && !selectedCompetition)
+          setSelectedCompetition(competitions[0].id);
+      }, [competitions]);
+
+      // Gruppera poäng baserat på vald deltävling
+      const grouped = {};
+      shooters.forEach(s => {
+        // Filtrera scores på vald deltävling
+        const total = scores
+          .filter(sc => sc.shooterId === s.id && sc.competitionId === selectedCompetition)
+          .reduce((a, b) => a + b.total, 0);
+        if (!grouped[s.klass]) grouped[s.klass] = [];
+        grouped[s.klass].push({ ...s, total });
+      });
+      Object.keys(grouped).forEach(k => grouped[k].sort((a, b) => b.total - a.total));
+
+      // Exportera PDF för vald deltävling
       const exportPDF = () => {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
@@ -359,25 +389,42 @@
         doc.setFontSize(16);
         doc.text("Resultatlista", 105, y, { align: "center" });
         y += 10;
-        Object.keys(grouped).forEach(klass=>{
+        const compName = competitions.find(c => c.id === selectedCompetition)?.name || "";
+        doc.setFontSize(13);
+        doc.text(compName, 105, y, { align: "center" });
+        y += 10;
+        Object.keys(grouped).forEach(klass => {
           doc.setFontSize(14);
-          doc.text(klass, 20, y); y += 8;
+          doc.text(klass, 20, y);
+          y += 8;
           doc.setFontSize(11);
-          grouped[klass].forEach((s,i)=>{
-            const medal = i===0?"🥇":i===1?"🥈":i===2?"🥉":"";
-            doc.text(`${i+1}. ${s.name} (${s.club}) - ${s.total}p ${medal}`, 25, y);
+          grouped[klass].forEach((s, i) => {
+            const medal = i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : "";
+            doc.text(`${i + 1}. ${s.name} (${s.club}) - ${s.total}p ${medal}`, 25, y);
             y += 6;
           });
           y += 4;
         });
-        doc.save("resultatlista.pdf");
+        doc.save(`resultatlista_${compName}.pdf`);
       };
 
       return (
         <section>
           <h2 className="text-xl font-bold mb-3 text-blue-700 flex items-center gap-2"><span>🏆</span> Resultatlista</h2>
-          <button onClick={exportPDF} className="mb-4 bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg font-bold shadow transition">Exportera som PDF</button>
-          {Object.keys(grouped).map(klass=>(
+          <div className="mb-4 flex flex-wrap gap-2 items-center">
+            <label className="mr-2 text-sm font-medium text-blue-700">Välj deltävling:</label>
+            <select
+              value={selectedCompetition}
+              onChange={e => setSelectedCompetition(e.target.value)}
+              className="border p-2 rounded-lg min-w-[160px]"
+            >
+              {competitions.map(c => (
+                <option key={c.id} value={c.id}>{c.name}</option>
+              ))}
+            </select>
+            <button onClick={exportPDF} className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-bold shadow transition ml-auto">Exportera som PDF</button>
+          </div>
+          {Object.keys(grouped).map(klass => (
             <div key={klass} className="mb-6">
               <h3 className="text-lg font-bold mb-2 capitalize text-blue-600">{klass}</h3>
               <div className="overflow-x-auto">
@@ -391,9 +438,9 @@
                     </tr>
                   </thead>
                   <tbody>
-                    {grouped[klass].map((s,i)=>(
+                    {grouped[klass].map((s, i) => (
                       <tr key={s.id} className="border-b">
-                        <td className="p-2">{i+1} {i===0?"🥇":i===1?"🥈":i===2?"🥉":""}</td>
+                        <td className="p-2">{i + 1} {i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : ""}</td>
                         <td className="p-2 font-semibold">{s.name}</td>
                         <td className="p-2">{s.club}</td>
                         <td className="p-2 font-bold text-blue-700">{s.total}</td>
