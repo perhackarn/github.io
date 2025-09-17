@@ -431,6 +431,7 @@
       );
     }
 
+    // ---- RESULTATLISTA MED STATIONPOÄNG ----
     function Results({ shooters, scores, competitions }) {
       const [selectedCompetition, setSelectedCompetition] = React.useState(
         competitions.length > 0 ? competitions[0].id : ""
@@ -441,19 +442,32 @@
           setSelectedCompetition(competitions[0].id);
       }, [competitions]);
 
-      // Gruppera poäng baserat på vald deltävling
+      // Hämta alla stationnummer för denna deltävling
+      const allStations = Array.from(
+        new Set(scores.filter(sc => sc.competitionId === selectedCompetition).map(sc => sc.station))
+      ).sort((a, b) => a - b);
+
+      // Gruppera skyttar per klass och beräkna stationspoäng
       const grouped = {};
       shooters.forEach(s => {
-        // Filtrera scores på vald deltävling
-        const total = scores
-          .filter(sc => sc.shooterId === s.id && sc.competitionId === selectedCompetition)
-          .reduce((a, b) => a + b.total, 0);
+        const shooterScores = scores
+          .filter(sc => sc.shooterId === s.id && sc.competitionId === selectedCompetition);
+
+        // summera per station
+        const stationTotals = {};
+        shooterScores.forEach(sc => {
+          stationTotals[sc.station] = (stationTotals[sc.station] || 0) + sc.total;
+        });
+
+        // totalsumma
+        const total = Object.values(stationTotals).reduce((a, b) => a + b, 0);
+
         if (!grouped[s.klass]) grouped[s.klass] = [];
-        grouped[s.klass].push({ ...s, total });
+        grouped[s.klass].push({ ...s, total, stationTotals });
       });
       Object.keys(grouped).forEach(k => grouped[k].sort((a, b) => b.total - a.total));
 
-      // Exportera PDF för vald deltävling
+      // PDF-export som visar stationspoäng
       const exportPDF = () => {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
@@ -472,7 +486,15 @@
           doc.setFontSize(11);
           grouped[klass].forEach((s, i) => {
             const medal = i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : "";
-            doc.text(`${i + 1}. ${s.name} (${s.club}) - ${s.total}p ${medal}`, 25, y);
+            let row = `${i + 1}. ${s.name} (${s.club}) - ${s.total}p ${medal}`;
+            if (allStations.length) {
+              row += "  [";
+              row += allStations.map(station =>
+                `${station}: ${s.stationTotals[station] || 0}p`
+              ).join(", ");
+              row += "]";
+            }
+            doc.text(row, 25, y);
             y += 6;
           });
           y += 4;
@@ -506,7 +528,10 @@
                       <th className="p-2 text-left">Plats</th>
                       <th className="p-2 text-left">Skytt</th>
                       <th className="p-2 text-left">Ort</th>
-                      <th className="p-2 text-left">Poäng</th>
+                      {allStations.map(station => (
+                        <th className="p-2 text-left" key={station}>St {station}</th>
+                      ))}
+                      <th className="p-2 text-left">Summa</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -515,6 +540,9 @@
                         <td className="p-2">{i + 1} {i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : ""}</td>
                         <td className="p-2 font-semibold">{s.name}</td>
                         <td className="p-2">{s.club}</td>
+                        {allStations.map(station => (
+                          <td className="p-2 font-mono" key={station}>{s.stationTotals[station] || 0}</td>
+                        ))}
                         <td className="p-2 font-bold text-blue-700">{s.total}</td>
                       </tr>
                     ))}
