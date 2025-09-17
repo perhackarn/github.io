@@ -2,6 +2,7 @@
 <html lang="sv">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Skyttetävling</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
@@ -9,42 +10,47 @@
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
-<body class="bg-gray-50 min-h-screen">
+<body class="bg-gradient-to-b from-blue-100 to-white min-h-screen">
+
+  <!-- Header -->
+  <header class="w-full py-4 bg-blue-600 shadow-lg sticky top-0 z-10">
+    <div class="max-w-3xl mx-auto px-4 flex justify-between items-center">
+      <h1 class="text-xl md:text-2xl font-extrabold text-white tracking-wide flex items-center gap-2">
+        <svg class="w-7 h-7 text-yellow-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+        Skyttetävling
+      </h1>
+      <div id="header-auth"></div>
+    </div>
+  </header>
 
   <!-- Login-box -->
-  <div id="login-box" class="p-4 bg-gray-100 rounded-xl max-w-sm mx-auto mt-6">
-    <h2 class="text-lg font-bold mb-3 text-center">Logga in</h2>
+  <div id="login-box" class="p-6 bg-white rounded-2xl shadow-lg max-w-xs mx-auto mt-10 border border-blue-100">
+    <h2 class="text-lg font-bold mb-3 text-center text-blue-700">Logga in</h2>
     <button id="loginGoogle"
-      class="w-full bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded mb-3">
-      Logga in med Google
-    </button>
+      class="w-full bg-red-500 hover:bg-red-600 text-white px-4 py-3 rounded-lg mb-3 font-semibold transition">Logga in med Google</button>
     <hr class="my-3">
     <input id="email" type="email" placeholder="E-post"
-      class="border p-2 w-full mb-2 rounded">
+      class="border p-3 w-full mb-2 rounded-lg focus:ring-blue-400 focus:ring-2 transition">
     <input id="password" type="password" placeholder="Lösenord"
-      class="border p-2 w-full mb-2 rounded">
+      class="border p-3 w-full mb-2 rounded-lg focus:ring-blue-400 focus:ring-2 transition">
     <div class="flex gap-2">
       <button id="loginEmail"
-        class="flex-1 bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded">
-        Logga in
-      </button>
+        class="flex-1 bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-md font-semibold transition">Logga in</button>
       <button id="registerEmail"
-        class="flex-1 bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded">
-        Registrera
-      </button>
+        class="flex-1 bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded-md font-semibold transition">Registrera</button>
     </div>
   </div>
 
   <!-- User-box -->
-  <div id="user-box" class="hidden p-4 bg-green-100 rounded-xl max-w-sm mx-auto mt-6 text-center">
-    <p class="mb-2">Inloggad som <span id="user-email" class="font-bold"></span></p>
-    <button id="logoutBtn" class="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded">
-      Logga ut
-    </button>
+  <div id="user-box" class="hidden p-4 bg-green-50 rounded-2xl shadow max-w-xs mx-auto mt-10 text-center border border-green-200">
+    <p class="mb-2 text-green-800">Inloggad som <span id="user-email" class="font-bold"></span></p>
+    <button id="logoutBtn" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded font-semibold transition">Logga ut</button>
   </div>
 
   <!-- React app -->
-  <div id="app" class="max-w-6xl mx-auto mt-10"></div>
+  <main class="max-w-3xl mx-auto mt-6 px-2 pb-10">
+    <div id="app"></div>
+  </main>
 
   <!-- Firebase + auth -->
   <script type="module">
@@ -85,12 +91,23 @@
       }
     }
 
+    // Auth UI
     const loginBox = document.getElementById("login-box");
     const userBox = document.getElementById("user-box");
     const userEmailSpan = document.getElementById("user-email");
     const logoutBtn = document.getElementById("logoutBtn");
+    const headerAuth = document.getElementById("header-auth");
+
+    function renderHeaderAuth(user) {
+      if (user) {
+        headerAuth.innerHTML = `<span class="text-white text-sm mr-2">Hej, <b>${user.email || user.displayName}</b></span>`;
+      } else {
+        headerAuth.innerHTML = `<span class="text-white text-sm">Ej inloggad</span>`;
+      }
+    }
 
     onAuthStateChanged(auth, (user) => {
+      renderHeaderAuth(user);
       if (user) {
         loginBox.classList.add("hidden");
         userBox.classList.remove("hidden");
@@ -137,7 +154,17 @@
   <script type="text/babel">
     const { db, collection, addDoc, onSnapshot, query, orderBy } = window.firestore;
 
+    function useAuth() {
+      const [user, setUser] = React.useState(window.firebaseAuth.auth.currentUser);
+      React.useEffect(() => {
+        const unsub = window.firebaseAuth.auth.onAuthStateChanged(setUser);
+        return () => unsub && unsub();
+      }, []);
+      return user;
+    }
+
     function App() {
+      const user = useAuth();
       const [competitions, setCompetitions] = React.useState([]);
       const [shooters, setShooters] = React.useState([]);
       const [scores, setScores] = React.useState([]);
@@ -163,54 +190,76 @@
       }, []);
 
       return (
-        <div className="bg-white rounded-xl shadow p-6">
-          <h1 className="text-2xl font-bold mb-6">Skyttetävling</h1>
-          <div className="flex gap-2 mb-6">
-            <button className={`px-3 py-1 rounded ${tab==="competitions"?"bg-blue-500 text-white":"bg-gray-200"}`} onClick={()=>setTab("competitions")}>Deltävlingar</button>
-            <button className={`px-3 py-1 rounded ${tab==="shooters"?"bg-blue-500 text-white":"bg-gray-200"}`} onClick={()=>setTab("shooters")}>Skyttar</button>
-            <button className={`px-3 py-1 rounded ${tab==="scores"?"bg-blue-500 text-white":"bg-gray-200"}`} onClick={()=>setTab("scores")}>Poäng</button>
-            <button className={`px-3 py-1 rounded ${tab==="results"?"bg-blue-500 text-white":"bg-gray-200"}`} onClick={()=>setTab("results")}>Resultatlista</button>
-          </div>
-
-          {tab==="competitions" && <Competitions competitions={competitions} />}
-          {tab==="shooters" && <Shooters shooters={shooters} />}
-          {tab==="scores" && <Scores shooters={shooters} competitions={competitions} />}
+        <div className="bg-white rounded-2xl shadow-lg p-4 md:p-8 mt-4">
+          <nav className="flex flex-wrap gap-2 mb-6 justify-center md:justify-start">
+            <TabBtn active={tab==="competitions"} onClick={()=>setTab("competitions")} icon="📅">Deltävlingar</TabBtn>
+            <TabBtn active={tab==="shooters"} onClick={()=>setTab("shooters")} icon="🎯">Skyttar</TabBtn>
+            <TabBtn active={tab==="scores"} onClick={()=>setTab("scores")} icon="📝">Poäng</TabBtn>
+            <TabBtn active={tab==="results"} onClick={()=>setTab("results")} icon="🏆">Resultatlista</TabBtn>
+          </nav>
+          {tab==="competitions" && <Competitions competitions={competitions} user={user} />}
+          {tab==="shooters" && <Shooters shooters={shooters} user={user} />}
+          {tab==="scores" && <Scores shooters={shooters} competitions={competitions} user={user} />}
           {tab==="results" && <Results shooters={shooters} scores={scores} />}
         </div>
       );
     }
 
-    function Competitions({ competitions }) {
+    function TabBtn({active, onClick, icon, children}) {
+      return (
+        <button
+          className={`flex-1 min-w-[120px] px-3 py-2 rounded-lg font-semibold flex items-center justify-center gap-2 transition
+            shadow-sm ${active ? "bg-blue-600 text-white" : "bg-gray-100 hover:bg-blue-100 text-blue-700"}`}
+          onClick={onClick}>
+          <span className="text-lg">{icon}</span>
+          <span>{children}</span>
+        </button>
+      );
+    }
+
+    function Competitions({ competitions, user }) {
       const [name, setName] = React.useState("");
       const [date, setDate] = React.useState("");
 
       const addCompetition = async () => {
+        if (!user) return alert("Du måste vara inloggad!");
         if (!name || !date) return;
         await addDoc(collection(db, "competitions"), { name, date });
         setName(""); setDate("");
       };
 
       return (
-        <div>
-          <h2 className="text-xl font-bold mb-3">Deltävlingar</h2>
-          <div className="flex gap-2 mb-4">
-            <input value={name} onChange={e=>setName(e.target.value)} placeholder="Namn" className="border p-2 rounded flex-1"/>
-            <input type="date" value={date} onChange={e=>setDate(e.target.value)} className="border p-2 rounded"/>
-            <button onClick={addCompetition} className="bg-green-500 text-white px-3 py-1 rounded">Lägg till</button>
+        <section>
+          <h2 className="text-xl font-bold mb-3 text-blue-700 flex items-center gap-2"><span>📅</span> Deltävlingar</h2>
+          <div className="flex flex-col md:flex-row gap-2 mb-4">
+            <input value={name} onChange={e=>setName(e.target.value)} placeholder="Namn"
+              className="border p-3 rounded-lg flex-1 focus:ring-blue-400 focus:ring-2" />
+            <input type="date" value={date} onChange={e=>setDate(e.target.value)}
+              className="border p-3 rounded-lg focus:ring-blue-400 focus:ring-2" />
+            <button onClick={addCompetition}
+              className={`bg-green-500 text-white px-4 py-2 rounded-lg font-semibold transition shadow ${!user ? "opacity-40 cursor-not-allowed" : ""}`}
+              disabled={!user}>Lägg till</button>
           </div>
-          <ul>
-            {competitions.map(c=><li key={c.id} className="border-b py-1">{c.name} ({c.date})</li>)}
+          {!user && <p className="text-red-500 text-sm mb-2">Logga in för att lägga till deltävlingar.</p>}
+          <ul className="divide-y">
+            {competitions.map(c=>
+              <li key={c.id} className="py-3 flex justify-between items-center">
+                <span className="font-medium">{c.name}</span>
+                <span className="text-gray-500">{c.date}</span>
+              </li>
+            )}
           </ul>
-        </div>
+        </section>
       );
     }
 
-    function Shooters({ shooters }) {
+    function Shooters({ shooters, user }) {
       const [name, setName] = React.useState("");
       const [club, setClub] = React.useState("");
       const [klass, setKlass] = React.useState("öppen");
 
       const addShooter = async () => {
+        if (!user) return alert("Du måste vara inloggad!");
         if (!name || !club) return;
         const startNumber = shooters.length+1;
         await addDoc(collection(db, "shooters"), { name, club, klass, startNumber });
@@ -218,30 +267,41 @@
       };
 
       return (
-        <div>
-          <h2 className="text-xl font-bold mb-3">Skyttar</h2>
-          <div className="grid grid-cols-4 gap-2 mb-4">
-            <input value={name} onChange={e=>setName(e.target.value)} placeholder="Namn" className="border p-2 rounded"/>
-            <input value={club} onChange={e=>setClub(e.target.value)} placeholder="Ort" className="border p-2 rounded"/>
-            <select value={klass} onChange={e=>setKlass(e.target.value)} className="border p-2 rounded">
+        <section>
+          <h2 className="text-xl font-bold mb-3 text-blue-700 flex items-center gap-2"><span>🎯</span> Skyttar</h2>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-2 mb-4">
+            <input value={name} onChange={e=>setName(e.target.value)} placeholder="Namn"
+              className="border p-3 rounded-lg focus:ring-blue-400 focus:ring-2"/>
+            <input value={club} onChange={e=>setClub(e.target.value)} placeholder="Ort"
+              className="border p-3 rounded-lg focus:ring-blue-400 focus:ring-2"/>
+            <select value={klass} onChange={e=>setKlass(e.target.value)} className="border p-3 rounded-lg">
               <option>öppen</option><option>dam</option><option>veteran</option><option>ungdom</option><option>junior med stöd</option>
             </select>
-            <button onClick={addShooter} className="bg-green-500 text-white px-3 py-1 rounded">Lägg till</button>
+            <button onClick={addShooter}
+              className={`bg-green-500 text-white px-4 py-2 rounded-lg font-semibold transition shadow ${!user ? "opacity-40 cursor-not-allowed" : ""}`}
+              disabled={!user}>Lägg till</button>
           </div>
-          <ul>
-            {shooters.map(s=><li key={s.id} className="border-b py-1">#{s.startNumber} {s.name} ({s.club}) – {s.klass}</li>)}
+          {!user && <p className="text-red-500 text-sm mb-2">Logga in för att lägga till skyttar.</p>}
+          <ul className="divide-y">
+            {shooters.map(s=>
+              <li key={s.id} className="py-3 flex items-center justify-between text-sm">
+                <span><span className="font-bold text-blue-700">#{s.startNumber}</span> {s.name} <span className="text-gray-500">({s.club})</span></span>
+                <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">{s.klass}</span>
+              </li>
+            )}
           </ul>
-        </div>
+        </section>
       );
     }
 
-    function Scores({ shooters, competitions }) {
+    function Scores({ shooters, competitions, user }) {
       const [competitionId, setCompetitionId] = React.useState("");
       const [station, setStation] = React.useState(1);
       const [shooterId, setShooterId] = React.useState("");
       const [shots, setShots] = React.useState([0,0,0,0,0]);
 
       const saveScore = async () => {
+        if (!user) return alert("Du måste vara inloggad!");
         if (!competitionId || !shooterId) return;
         const total = shots.reduce((a,b)=>a+b,0);
         await addDoc(collection(db,"scores"), { competitionId, shooterId, station, shots, total });
@@ -249,31 +309,37 @@
       };
 
       return (
-        <div>
-          <h2 className="text-xl font-bold mb-3">Registrera poäng</h2>
-          <select value={competitionId} onChange={e=>setCompetitionId(e.target.value)} className="border p-2 rounded mb-2">
-            <option value="">Välj tävling</option>
-            {competitions.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}
-          </select>
-          <div className="mb-2">
-            <label>Station: </label>
-            <input type="number" min="1" max="7" value={station} onChange={e=>setStation(Number(e.target.value))} className="border p-1 rounded w-16"/>
+        <section>
+          <h2 className="text-xl font-bold mb-3 text-blue-700 flex items-center gap-2"><span>📝</span> Registrera poäng</h2>
+          <div className="flex flex-col md:flex-row gap-2 mb-2">
+            <select value={competitionId} onChange={e=>setCompetitionId(e.target.value)} className="border p-3 rounded-lg flex-1">
+              <option value="">Välj tävling</option>
+              {competitions.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}
+            </select>
+            <div>
+              <label className="block text-xs text-gray-700 mb-1">Station:</label>
+              <input type="number" min="1" max="7" value={station} onChange={e=>setStation(Number(e.target.value))}
+                className="border p-3 rounded-lg w-20"/>
+            </div>
+            <select value={shooterId} onChange={e=>setShooterId(e.target.value)} className="border p-3 rounded-lg flex-1">
+              <option value="">Välj skytt</option>
+              {shooters.map(s=><option key={s.id} value={s.id}>#{s.startNumber} {s.name}</option>)}
+            </select>
           </div>
-          <select value={shooterId} onChange={e=>setShooterId(e.target.value)} className="border p-2 rounded mb-2">
-            <option value="">Välj skytt</option>
-            {shooters.map(s=><option key={s.id} value={s.id}>#{s.startNumber} {s.name}</option>)}
-          </select>
-          <div className="flex gap-2 mb-2">
+          <div className="flex gap-2 mb-2 justify-center">
             {shots.map((v,i)=>(
               <input key={i} type="number" min="0" max="10" value={v}
                 onChange={e=>{
                   const ns=[...shots]; ns[i]=Number(e.target.value); setShots(ns);
                 }}
-                className="border p-2 rounded w-16"/>
+                className="border p-3 rounded-lg w-16 text-center font-semibold text-lg"/>
             ))}
           </div>
-          <button onClick={saveScore} className="bg-blue-500 text-white px-3 py-1 rounded">Spara</button>
-        </div>
+          <button onClick={saveScore}
+            className={`bg-blue-500 text-white px-6 py-2 rounded-lg font-bold shadow transition ${!user ? "opacity-40 cursor-not-allowed" : ""}`}
+            disabled={!user}>Spara</button>
+          {!user && <p className="text-red-500 text-sm mt-2">Logga in för att registrera poäng.</p>}
+        </section>
       );
     }
 
@@ -308,35 +374,37 @@
       };
 
       return (
-        <div>
-          <h2 className="text-xl font-bold mb-3">Resultatlista</h2>
-          <button onClick={exportPDF} className="mb-4 bg-purple-500 text-white px-3 py-1 rounded">Exportera som PDF</button>
+        <section>
+          <h2 className="text-xl font-bold mb-3 text-blue-700 flex items-center gap-2"><span>🏆</span> Resultatlista</h2>
+          <button onClick={exportPDF} className="mb-4 bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg font-bold shadow transition">Exportera som PDF</button>
           {Object.keys(grouped).map(klass=>(
             <div key={klass} className="mb-6">
-              <h3 className="text-lg font-bold mb-2 capitalize">{klass}</h3>
-              <table className="w-full border">
-                <thead>
-                  <tr className="bg-gray-200">
-                    <th className="p-2 text-left">Plats</th>
-                    <th className="p-2 text-left">Skytt</th>
-                    <th className="p-2 text-left">Ort</th>
-                    <th className="p-2 text-left">Poäng</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {grouped[klass].map((s,i)=>(
-                    <tr key={s.id} className="border-b">
-                      <td className="p-2">{i+1} {i===0?"🥇":i===1?"🥈":i===2?"🥉":""}</td>
-                      <td className="p-2">{s.name}</td>
-                      <td className="p-2">{s.club}</td>
-                      <td className="p-2">{s.total}</td>
+              <h3 className="text-lg font-bold mb-2 capitalize text-blue-600">{klass}</h3>
+              <div className="overflow-x-auto">
+                <table className="min-w-full border rounded-lg text-sm">
+                  <thead>
+                    <tr className="bg-blue-50">
+                      <th className="p-2 text-left">Plats</th>
+                      <th className="p-2 text-left">Skytt</th>
+                      <th className="p-2 text-left">Ort</th>
+                      <th className="p-2 text-left">Poäng</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {grouped[klass].map((s,i)=>(
+                      <tr key={s.id} className="border-b">
+                        <td className="p-2">{i+1} {i===0?"🥇":i===1?"🥈":i===2?"🥉":""}</td>
+                        <td className="p-2 font-semibold">{s.name}</td>
+                        <td className="p-2">{s.club}</td>
+                        <td className="p-2 font-bold text-blue-700">{s.total}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           ))}
-        </div>
+        </section>
       );
     }
 
