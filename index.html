@@ -138,7 +138,7 @@
       const [competitions, setCompetitions] = React.useState([]);
       const [shooters, setShooters] = React.useState([]);
       const [scores, setScores] = React.useState([]);
-      const [tab, setTab] = React.useState("competitions");
+      const [tab, setTab] = React.useState("results");
 
       React.useEffect(() => {
         const q = query(collection(db, "competitions"), orderBy("date"));
@@ -159,6 +159,16 @@
         });
       }, []);
 
+      // Om ej inloggad, visa endast resultatlistan!
+      if (!user) {
+        return (
+          <div className="bg-white rounded-2xl shadow-lg p-4 md:p-8 mt-4">
+            <Results shooters={shooters} scores={scores} competitions={competitions} />
+          </div>
+        );
+      }
+
+      // Inloggad: visa alla tabs
       return (
         <div className="bg-white rounded-2xl shadow-lg p-4 md:p-8 mt-4">
           <nav className="flex flex-wrap gap-2 mb-6 justify-center md:justify-start">
@@ -476,7 +486,7 @@
       );
     }
 
-    // ---- RESULTATLISTA MED STATIONPOÄNG ----
+    // ---- RESULTATLISTA MED STATIONPOÄNG OCH ALLA KLASSER ----
     function Results({ shooters, scores, competitions }) {
       const [selectedCompetition, setSelectedCompetition] = React.useState(
         competitions.length > 0 ? competitions[0].id : ""
@@ -512,6 +522,9 @@
       });
       Object.keys(grouped).forEach(k => grouped[k].sort((a, b) => b.total - a.total));
 
+      // Lista över alla klasser (så alla alltid syns)
+      const allClasses = ["öppen", "dam", "veteran", "ungdom", "junior med stöd"];
+
       // PDF-export som visar stationspoäng
       const exportPDF = () => {
         const { jsPDF } = window.jspdf;
@@ -524,24 +537,29 @@
         doc.setFontSize(13);
         doc.text(compName, 105, y, { align: "center" });
         y += 10;
-        Object.keys(grouped).forEach(klass => {
+        allClasses.forEach(klass => {
           doc.setFontSize(14);
           doc.text(klass, 20, y);
           y += 8;
           doc.setFontSize(11);
-          grouped[klass].forEach((s, i) => {
-            const medal = i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : "";
-            let row = `${i + 1}. ${s.name} (${s.club}) - ${s.total}p ${medal}`;
-            if (allStations.length) {
-              row += "  [";
-              row += allStations.map(station =>
-                `${station}: ${s.stationTotals[station] || 0}p`
-              ).join(", ");
-              row += "]";
-            }
-            doc.text(row, 25, y);
+          if (!grouped[klass] || grouped[klass].length === 0) {
+            doc.text("Inga deltagare", 25, y);
             y += 6;
-          });
+          } else {
+            grouped[klass].forEach((s, i) => {
+              const medal = i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : "";
+              let row = `${i + 1}. ${s.name} (${s.club}) - ${s.total}p ${medal}`;
+              if (allStations.length) {
+                row += "  [";
+                row += allStations.map(station =>
+                  `${station}: ${s.stationTotals[station] || 0}p`
+                ).join(", ");
+                row += "]";
+              }
+              doc.text(row, 25, y);
+              y += 6;
+            });
+          }
           y += 4;
         });
         doc.save(`resultatlista_${compName}.pdf`);
@@ -563,7 +581,7 @@
             </select>
             <button onClick={exportPDF} className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-bold shadow transition ml-auto">Exportera som PDF</button>
           </div>
-          {Object.keys(grouped).map(klass => (
+          {allClasses.map(klass => (
             <div key={klass} className="mb-6">
               <h3 className="text-lg font-bold mb-2 capitalize text-blue-600">{klass}</h3>
               <div className="overflow-x-auto">
@@ -580,17 +598,23 @@
                     </tr>
                   </thead>
                   <tbody>
-                    {grouped[klass].map((s, i) => (
-                      <tr key={s.id} className="border-b">
-                        <td className="p-2">{i + 1} {i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : ""}</td>
-                        <td className="p-2 font-semibold">{s.name}</td>
-                        <td className="p-2">{s.club}</td>
-                        {allStations.map(station => (
-                          <td className="p-2 font-mono" key={station}>{s.stationTotals[station] || 0}</td>
-                        ))}
-                        <td className="p-2 font-bold text-blue-700">{s.total}</td>
+                    {(grouped[klass] || []).length === 0 ? (
+                      <tr>
+                        <td className="p-2 text-gray-400" colSpan={4 + allStations.length}>Inga deltagare</td>
                       </tr>
-                    ))}
+                    ) : (
+                      grouped[klass].map((s, i) => (
+                        <tr key={s.id} className="border-b">
+                          <td className="p-2">{i + 1} {i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : ""}</td>
+                          <td className="p-2 font-semibold">{s.name}</td>
+                          <td className="p-2">{s.club}</td>
+                          {allStations.map(station => (
+                            <td className="p-2 font-mono" key={station}>{s.stationTotals[station] || 0}</td>
+                          ))}
+                          <td className="p-2 font-bold text-blue-700">{s.total}</td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>
