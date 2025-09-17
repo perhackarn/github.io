@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Landbys Cup</title>
+  <title>Skyttetävling</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
@@ -17,7 +17,7 @@
     <div class="max-w-3xl mx-auto px-4 flex justify-between items-center">
       <h1 class="text-xl md:text-2xl font-extrabold text-white tracking-wide flex items-center gap-2">
         <svg class="w-7 h-7 text-yellow-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
-        Landbys Cup
+        Skyttetävling
       </h1>
       <div id="header-auth"></div>
     </div>
@@ -26,19 +26,12 @@
   <!-- Login-box -->
   <div id="login-box" class="p-6 bg-white rounded-2xl shadow-lg max-w-xs mx-auto mt-10 border border-blue-100">
     <h2 class="text-lg font-bold mb-3 text-center text-blue-700">Logga in</h2>
-    <button id="loginGoogle"
-      class="w-full bg-red-500 hover:bg-red-600 text-white px-4 py-3 rounded-lg mb-3 font-semibold transition">Logga in med Google</button>
-    <hr class="my-3">
     <input id="email" type="email" placeholder="E-post"
       class="border p-3 w-full mb-2 rounded-lg focus:ring-blue-400 focus:ring-2 transition">
     <input id="password" type="password" placeholder="Lösenord"
       class="border p-3 w-full mb-2 rounded-lg focus:ring-blue-400 focus:ring-2 transition">
-    <div class="flex gap-2">
-      <button id="loginEmail"
-        class="flex-1 bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-md font-semibold transition">Logga in</button>
-      <button id="registerEmail"
-        class="flex-1 bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded-md font-semibold transition">Registrera</button>
-    </div>
+    <button id="loginEmail"
+      class="w-full bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-md font-semibold transition">Logga in</button>
   </div>
 
   <!-- User-box -->
@@ -61,11 +54,8 @@
     } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-firestore.js";
     import {
       getAuth,
-      signInWithPopup,
-      GoogleAuthProvider,
       signOut,
       onAuthStateChanged,
-      createUserWithEmailAndPassword,
       signInWithEmailAndPassword
     } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-auth.js";
 
@@ -74,15 +64,7 @@
     const app = initializeApp(firebaseConfig);
     export const db = getFirestore(app);
     export const auth = getAuth(app);
-    export const provider = new GoogleAuthProvider(app);
 
-    export async function registerWithEmail(email, password) {
-      try {
-        await createUserWithEmailAndPassword(auth, email, password);
-      } catch (error) {
-        alert(error.message);
-      }
-    }
     export async function loginWithEmail(email, password) {
       try {
         await signInWithEmailAndPassword(auth, email, password);
@@ -119,22 +101,10 @@
       }
     });
 
-    document.getElementById("loginGoogle").addEventListener("click", async () => {
-      try {
-        await signInWithPopup(auth, provider);
-      } catch (error) {
-        alert(error.message);
-      }
-    });
     document.getElementById("loginEmail").addEventListener("click", () => {
       const email = document.getElementById("email").value;
       const password = document.getElementById("password").value;
       loginWithEmail(email, password);
-    });
-    document.getElementById("registerEmail").addEventListener("click", () => {
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
-      registerWithEmail(email, password);
     });
     logoutBtn.addEventListener("click", async () => {
       try {
@@ -217,7 +187,6 @@
       );
     }
 
-    // Redigera och ta bort deltävlingar
     function Competitions({ competitions, user }) {
       const [name, setName] = React.useState("");
       const [date, setDate] = React.useState("");
@@ -301,7 +270,6 @@
       );
     }
 
-    // Redigera och ta bort skyttar
     function Shooters({ shooters, user }) {
       const [search, setSearch] = React.useState("");
       const filteredShooters = shooters.filter(s =>
