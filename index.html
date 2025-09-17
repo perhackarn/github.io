@@ -376,11 +376,31 @@
       );
     }
 
+    // ---- Scores med station-drop-down och skytt-sök ----
     function Scores({ shooters, competitions, user }) {
       const [competitionId, setCompetitionId] = React.useState("");
       const [station, setStation] = React.useState(1);
+
+      // Sök och välj skytt
+      const [searchShooter, setSearchShooter] = React.useState("");
+      const [filteredShooters, setFilteredShooters] = React.useState(shooters);
       const [shooterId, setShooterId] = React.useState("");
+
       const [shots, setShots] = React.useState([0,0,0,0,0]);
+
+      React.useEffect(() => {
+        if (searchShooter === "") {
+          setFilteredShooters(shooters);
+        } else {
+          const search = searchShooter.toLowerCase();
+          setFilteredShooters(
+            shooters.filter(s =>
+              s.name.toLowerCase().includes(search) ||
+              String(s.startNumber).includes(search)
+            )
+          );
+        }
+      }, [searchShooter, shooters]);
 
       const saveScore = async () => {
         if (!user) return alert("Du måste vara inloggad!");
@@ -390,6 +410,9 @@
         setShots([0,0,0,0,0]);
       };
 
+      // Skapa stationslista (t.ex. 1-7)
+      const stationOptions = Array.from({length: 7}, (_, i) => i + 1);
+
       return (
         <section>
           <h2 className="text-xl font-bold mb-3 text-blue-700 flex items-center gap-2"><span>📝</span> Registrera poäng</h2>
@@ -398,15 +421,37 @@
               <option value="">Välj tävling</option>
               {competitions.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
+
             <div>
               <label className="block text-xs text-gray-700 mb-1">Station:</label>
-              <input type="number" min="1" max="7" value={station} onChange={e=>setStation(Number(e.target.value))}
-                className="border p-3 rounded-lg w-20"/>
+              <select value={station} onChange={e=>setStation(Number(e.target.value))}
+                className="border p-3 rounded-lg w-24">
+                {stationOptions.map(num => (
+                  <option key={num} value={num}>Station {num}</option>
+                ))}
+              </select>
             </div>
-            <select value={shooterId} onChange={e=>setShooterId(e.target.value)} className="border p-3 rounded-lg flex-1">
-              <option value="">Välj skytt</option>
-              {shooters.map(s=><option key={s.id} value={s.id}>#{s.startNumber} {s.name}</option>)}
-            </select>
+
+            <div className="flex flex-col flex-1">
+              <label className="block text-xs text-gray-700 mb-1">Sök skytt:</label>
+              <input
+                type="text"
+                value={searchShooter}
+                onChange={e => setSearchShooter(e.target.value)}
+                placeholder="Namn eller startnummer"
+                className="border p-3 rounded-lg mb-1"
+              />
+              <select
+                value={shooterId}
+                onChange={e => setShooterId(e.target.value)}
+                className="border p-3 rounded-lg"
+              >
+                <option value="">Välj skytt</option>
+                {filteredShooters.map(s => (
+                  <option key={s.id} value={s.id}>#{s.startNumber} {s.name}</option>
+                ))}
+              </select>
+            </div>
           </div>
           <div className="flex gap-2 mb-2 justify-center">
             {shots.map((v,i)=>(
