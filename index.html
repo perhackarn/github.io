@@ -174,11 +174,13 @@
             <TabBtn active={tab==="shooters"} onClick={()=>setTab("shooters")} icon="🎯">Skyttar</TabBtn>
             <TabBtn active={tab==="scores"} onClick={()=>setTab("scores")} icon="📝">Poäng</TabBtn>
             <TabBtn active={tab==="results"} onClick={()=>setTab("results")} icon="🏆">Resultatlista</TabBtn>
+            <TabBtn active={tab==="cup"} onClick={()=>setTab("cup")} icon="🥇">Cupresultat</TabBtn>
           </nav>
           {tab==="competitions" && <Competitions competitions={competitions} user={user} />}
           {tab==="shooters" && <Shooters shooters={shooters} user={user} />}
           {tab==="scores" && <Scores shooters={shooters} competitions={competitions} user={user} />}
           {tab==="results" && <Results shooters={shooters} scores={scores} competitions={competitions} />}
+          {tab==="cup" && <CupResults shooters={shooters} scores={scores} competitions={competitions} />}
         </div>
       );
     }
@@ -218,15 +220,11 @@
         if (!user) return alert("Du måste vara inloggad!");
         if (!editName || !editDate) return;
         await updateDoc(doc(db, "competitions", editId), { name: editName, date: editDate });
-        setEditId(null);
-        setEditName("");
-        setEditDate("");
+        setEditId(null); setEditName(""); setEditDate("");
       };
 
       const cancelEdit = () => {
-        setEditId(null);
-        setEditName("");
-        setEditDate("");
+        setEditId(null); setEditName(""); setEditDate("");
       };
 
       const removeCompetition = async (id) => {
@@ -313,17 +311,11 @@
         if (!user) return alert("Du måste vara inloggad!");
         if (!editName || !editClub) return;
         await updateDoc(doc(db, "shooters", editId), { name: editName, club: editClub, klass: editKlass });
-        setEditId(null);
-        setEditName("");
-        setEditClub("");
-        setEditKlass("öppen");
+        setEditId(null); setEditName(""); setEditClub(""); setEditKlass("öppen");
       };
 
       const cancelEdit = () => {
-        setEditId(null);
-        setEditName("");
-        setEditClub("");
-        setEditKlass("öppen");
+        setEditId(null); setEditName(""); setEditClub(""); setEditKlass("öppen");
       };
 
       const removeShooter = async (id) => {
@@ -383,16 +375,13 @@
       );
     }
 
-    // ---- Scores med autocomplete ----
     function Scores({ shooters, competitions, user }) {
       const [competitionId, setCompetitionId] = React.useState("");
       const [station, setStation] = React.useState(1);
 
-      // Sök och välj skytt (autocomplete)
       const [searchShooter, setSearchShooter] = React.useState("");
       const [filteredShooters, setFilteredShooters] = React.useState([]);
       const [shooterId, setShooterId] = React.useState("");
-      const [selectedShooterName, setSelectedShooterName] = React.useState("");
 
       const [shots, setShots] = React.useState([0,0,0,0,0]);
 
@@ -412,7 +401,6 @@
 
       const selectShooter = (s) => {
         setShooterId(s.id);
-        setSelectedShooterName(`#${s.startNumber} ${s.name}`);
         setSearchShooter(`#${s.startNumber} ${s.name}`);
         setFilteredShooters([]);
       };
@@ -424,7 +412,6 @@
         await addDoc(collection(db,"scores"), { competitionId, shooterId, station, shots, total });
         setShots([0,0,0,0,0]);
         setShooterId("");
-        setSelectedShooterName("");
         setSearchShooter("");
       };
 
@@ -441,11 +428,11 @@
             <div>
               <label className="block text-xs text-gray-700 mb-1">Station:</label>
               <select value={station} onChange={e=>setStation(Number(e.target.value))}
-  className="border p-3 rounded-lg w-40 min-w-[120px]">
-  {stationOptions.map(num => (
-    <option key={num} value={num}>Station {num}</option>
-  ))}
-</select>
+                className="border p-3 rounded-lg w-40 min-w-[120px]">
+                {stationOptions.map(num => (
+                  <option key={num} value={num}>Station {num}</option>
+                ))}
+              </select>
             </div>
             <div className="flex flex-col flex-1 relative">
               <label className="block text-xs text-gray-700 mb-1">Sök skytt:</label>
@@ -455,7 +442,6 @@
                 onChange={e => {
                   setSearchShooter(e.target.value);
                   setShooterId("");
-                  setSelectedShooterName("");
                 }}
                 placeholder="Namn eller startnummer"
                 className="border p-3 rounded-lg mb-1"
@@ -484,9 +470,8 @@
                   const ns=[...shots];
                   ns[i]=e.target.value === "" ? 0 : Number(e.target.value);
                   setShots(ns);
-}}
-placeholder="0"
-                
+                }}
+                placeholder="0"
                 className="border p-3 rounded-lg w-16 text-center font-semibold text-lg"/>
             ))}
           </div>
@@ -624,6 +609,72 @@ placeholder="0"
               </div>
             </div>
           ))}
+        </section>
+      );
+    }
+
+    // --- CUPRESULTS: 5 bästa placeringar, lägst total vinner ---
+    function CupResults({ shooters, scores, competitions }) {
+      const placementsPerCompetition = {};
+      competitions.forEach(comp => {
+        const shootersTotals = shooters.map(s => {
+          const shooterScores = scores.filter(sc => sc.shooterId === s.id && sc.competitionId === comp.id);
+          const total = shooterScores.reduce((sum, sc) => sum + (sc.total || 0), 0);
+          return { shooterId: s.id, total };
+        });
+        shootersTotals.sort((a, b) => b.total - a.total);
+        placementsPerCompetition[comp.id] = {};
+        shootersTotals.forEach((s, i) => {
+          placementsPerCompetition[comp.id][s.shooterId] = s.total > 0 ? (i + 1) : null;
+        });
+      });
+
+      const cupList = shooters.map(s => {
+        const placings = competitions
+          .map(comp => placementsPerCompetition[comp.id][s.id])
+          .filter(p => p !== null && p !== undefined);
+        placings.sort((a, b) => a - b);
+        const sumPlacings = placings.slice(0, 5).reduce((a, b) => a + b, 0);
+        return {
+          ...s,
+          placings,
+          sumPlacings,
+          deltävlingar: placings.length
+        };
+      }).filter(s => s.placings.length > 0);
+
+      cupList.sort((a, b) => a.sumPlacings - b.sumPlacings);
+
+      return (
+        <section>
+          <h2 className="text-xl font-bold mb-3 text-yellow-700 flex items-center gap-2"><span>🥇</span> Cupresultat (5 bästa placeringar)</h2>
+          <div className="overflow-x-auto">
+            <table className="min-w-full border rounded-lg text-sm">
+              <thead>
+                <tr className="bg-yellow-50">
+                  <th className="p-2 text-left">Plats</th>
+                  <th className="p-2 text-left">Skytt</th>
+                  <th className="p-2 text-left">Ort</th>
+                  <th className="p-2 text-left">Antal deltävlingar</th>
+                  <th className="p-2 text-left">Cup-poäng</th>
+                  <th className="p-2 text-left">Placeringar</th>
+                </tr>
+              </thead>
+              <tbody>
+                {cupList.map((s, i) => (
+                  <tr key={s.id} className="border-b">
+                    <td className="p-2">{i + 1} {i === 0 ? "🏆" : i === 1 ? "🥈" : i === 2 ? "🥉" : ""}</td>
+                    <td className="p-2 font-semibold">{s.name}</td>
+                    <td className="p-2">{s.club}</td>
+                    <td className="p-2">{s.deltävlingar}</td>
+                    <td className="p-2 font-bold text-yellow-700">{isNaN(s.sumPlacings) ? "-" : s.sumPlacings}</td>
+                    <td className="p-2">{s.placings.slice(0,5).join(", ")}{s.placings.length > 5 ? " ..." : ""}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p className="mt-3 text-gray-600 text-sm">Cup-poäng = summan av de 5 bästa placeringarna. Lägst poäng vinner!</p>
         </section>
       );
     }
