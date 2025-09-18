@@ -691,7 +691,7 @@
 
   return (
     <section>
-      <h2 className="text-xl font-bold mb-3 text-yellow-700 flex items-center gap-2"><span>🥇</span> Cupresultat (5 bästa klassplaceringar)</h2>
+      <h2 className="text-xl font-bold mb-3 text-yellow-700 flex items-center gap-2"><span>🥇</span> Cupresultat </h2>
       <div className="mb-4 flex flex-wrap gap-2 items-center">
         <button onClick={exportPDF} className="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg font-bold shadow transition">Exportera som PDF</button>
       </div>
@@ -732,7 +732,7 @@
           </div>
         </div>
       ))}
-      <p className="mt-3 text-gray-600 text-sm">Cup-poäng = summan av de 5 bästa <b>klassplaceringarna</b>. Lägst poäng vinner!</p>
+      <p className="mt-3 text-gray-600 text-sm">Cup-poäng = summan av de 5 bästa <b>placeringarna</b>. Lägst poäng vinner!</p>
     </section>
   );
 }
