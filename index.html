@@ -615,30 +615,35 @@
 
     // --- CUPRESULTS: 5 bästa placeringar, lägst total vinner ---
     function CupResults({ shooters, scores, competitions }) {
-  // Grupplista för klassindelning
   const klassLista = ["öppen", "dam", "veteran", "ungdom", "junior med stöd"];
-
-  // Steg 1: placeringar per tävling
-  const placementsPerCompetition = {};
+  // Steg 1: Placeringar per deltävling, per klass
+  const placementsPerCompetition = {}; // {competitionId: {klass: [ {shooterId, total, placering} ]}}
   competitions.forEach(comp => {
-    const shootersTotals = shooters.map(s => {
+    // Gruppskyttar per klass
+    const shootersByClass = {};
+    klassLista.forEach(k => shootersByClass[k] = []);
+    shooters.forEach(s => {
       const shooterScores = scores.filter(sc => sc.shooterId === s.id && sc.competitionId === comp.id);
       const total = shooterScores.reduce((sum, sc) => sum + (sc.total || 0), 0);
-      return { shooterId: s.id, total };
+      shootersByClass[s.klass].push({ shooterId: s.id, total });
     });
-    shootersTotals.sort((a, b) => b.total - a.total); // högst poäng först
+    // Sortera och ge placering per klass
     placementsPerCompetition[comp.id] = {};
-    shootersTotals.forEach((s, i) => {
-      placementsPerCompetition[comp.id][s.shooterId] = s.total > 0 ? (i + 1) : null;
+    klassLista.forEach(k => {
+      const arr = shootersByClass[k].filter(s => s.total > 0);
+      arr.sort((a, b) => b.total - a.total);
+      placementsPerCompetition[comp.id][k] = arr.map((s, i) => ({ ...s, placering: i + 1 }));
     });
   });
 
-  // Steg 2: samla cupresultat per skytt
+  // Steg 2: Bygg cupresultat per skytt (klassvis placeringar)
   const grouped = {};
   shooters.forEach(s => {
-    const placings = competitions
-      .map(comp => placementsPerCompetition[comp.id][s.id])
-      .filter(p => p !== null && p !== undefined);
+    const placings = competitions.map(comp => {
+      const klassPlacings = placementsPerCompetition[comp.id][s.klass] || [];
+      const p = klassPlacings.find(ss => ss.shooterId === s.id);
+      return p ? p.placering : null;
+    }).filter(p => p !== null);
     placings.sort((a, b) => a - b);
     const sumPlacings = placings.slice(0, 5).reduce((a, b) => a + b, 0);
     const skyttObj = {
@@ -661,7 +666,7 @@
     const doc = new jsPDF();
     let y = 20;
     doc.setFontSize(16);
-    doc.text("Cupresultat – 5 bästa placeringar", 105, y, { align: "center" });
+    doc.text("Cupresultat – 5 bästa klassplaceringar", 105, y, { align: "center" });
     y += 10;
     klassLista.forEach(klass => {
       doc.setFontSize(14);
@@ -686,7 +691,7 @@
 
   return (
     <section>
-      <h2 className="text-xl font-bold mb-3 text-yellow-700 flex items-center gap-2"><span>🥇</span> Cupresultat (5 bästa placeringar)</h2>
+      <h2 className="text-xl font-bold mb-3 text-yellow-700 flex items-center gap-2"><span>🥇</span> Cupresultat (5 bästa klassplaceringar)</h2>
       <div className="mb-4 flex flex-wrap gap-2 items-center">
         <button onClick={exportPDF} className="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg font-bold shadow transition">Exportera som PDF</button>
       </div>
@@ -727,7 +732,7 @@
           </div>
         </div>
       ))}
-      <p className="mt-3 text-gray-600 text-sm">Cup-poäng = summan av de 5 bästa placeringarna. Lägst poäng vinner!</p>
+      <p className="mt-3 text-gray-600 text-sm">Cup-poäng = summan av de 5 bästa <b>klassplaceringarna</b>. Lägst poäng vinner!</p>
     </section>
   );
 }
