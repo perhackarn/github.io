@@ -378,8 +378,8 @@
     }
 
     // --- Scores och Results och CupResults --- 
-    
-// --- Scores: Registrera poäng inkl femettor ---
+
+  // --- Scores: Registrera poäng inkl femettor ---
 function Scores({ shooters, competitions, user }) {
   const [competitionId, setCompetitionId] = React.useState("");
   const [station, setStation] = React.useState(1);
@@ -529,7 +529,7 @@ function Scores({ shooters, competitions, user }) {
   );
 }
 
-// --- Results: Deltävlingens resultat med skiljemål på femettor ---
+// --- Results: Deltävlingens resultat med flexibla skiljemål ---
 function Results({ shooters, scores, competitions }) {
   const [selectedCompetition, setSelectedCompetition] = React.useState(
     competitions.length > 0 ? competitions[0].id : ""
@@ -545,6 +545,19 @@ function Results({ shooters, scores, competitions }) {
   ).sort((a, b) => a - b);
 
   const klassLista = ["öppen", "dam", "veteran", "ungdom", "junior med stöd"];
+
+  // Skiljemålsstationer, default [1,2,3]
+  const [skiljemalStationer, setSkiljemalStationer] = React.useState([1,2,3]);
+  function toggleStation(station) {
+    setSkiljemalStationer(prev => {
+      if (prev.includes(station)) {
+        return prev.filter(s => s !== station);
+      } else {
+        if (prev.length >= 3) return prev;
+        return [...prev, station];
+      }
+    });
+  }
 
   // Bygg resultat per klass
   const grouped = {};
@@ -564,10 +577,10 @@ function Results({ shooters, scores, competitions }) {
     grouped[s.klass].push({ ...s, total, stationTotals, stationFemettors });
   });
 
-  // Sortera med femettor som skiljemål
+  // Sortera med valda skiljemålsstationer
   function jämförSkyttar(a, b) {
     if (b.total !== a.total) return b.total - a.total;
-    for (const station of allStations) {
+    for (const station of skiljemalStationer) {
       const fa = a.stationFemettors?.[station] || 0;
       const fb = b.stationFemettors?.[station] || 0;
       if (fb !== fa) return fb - fa;
@@ -587,6 +600,9 @@ function Results({ shooters, scores, competitions }) {
     doc.setFontSize(13);
     doc.text(compName, 105, y, { align: "center" });
     y += 10;
+    doc.setFontSize(11);
+    doc.text(`Skiljemål: ${skiljemalStationer.map(s=>"St "+s).join(", ")}`, 20, y);
+    y += 8;
     klassLista.forEach(klass => {
       doc.setFontSize(14);
       doc.text(klass, 20, y);
@@ -630,6 +646,21 @@ function Results({ shooters, scores, competitions }) {
           ))}
         </select>
         <button onClick={exportPDF} className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-bold shadow transition ml-auto">Exportera som PDF</button>
+      </div>
+      <div className="flex gap-2 mb-4 items-center">
+        <span className="font-semibold text-blue-700">Skiljemål:</span>
+        {allStations.map(station => (
+          <label key={station} className="flex items-center gap-1">
+            <input
+              type="checkbox"
+              checked={skiljemalStationer.includes(station)}
+              onChange={() => toggleStation(station)}
+              disabled={!skiljemalStationer.includes(station) && skiljemalStationer.length >= 3}
+            />
+            <span>Station {station}</span>
+          </label>
+        ))}
+        <span className="text-xs text-gray-500 ml-2">(max 3 st)</span>
       </div>
       {klassLista.map(klass => (
         <div key={klass} className="mb-6">
@@ -680,30 +711,59 @@ function Results({ shooters, scores, competitions }) {
   );
 }
 
-// --- CupResults: Cupresultat med skiljemål på femettor ---
+// --- CupResults: Cupresultat med flexibla skiljemål ---
 function CupResults({ shooters, scores, competitions }) {
   const klassLista = ["öppen", "dam", "veteran", "ungdom", "junior med stöd"];
+
+  // Skiljemålsstationer, default [1,2,3]
+  const [skiljemalStationer, setSkiljemalStationer] = React.useState([1,2,3]);
+  // Hämta alla stationer som finns i cupen
+  const allStations = Array.from(
+    new Set(scores.map(sc => sc.station))
+  ).sort((a, b) => a - b);
+
+  function toggleStation(station) {
+    setSkiljemalStationer(prev => {
+      if (prev.includes(station)) {
+        return prev.filter(s => s !== station);
+      } else {
+        if (prev.length >= 3) return prev;
+        return [...prev, station];
+      }
+    });
+  }
+
   // Steg 1: Placeringar per deltävling, per klass
-  const placementsPerCompetition = {}; // {competitionId: {klass: [ {shooterId, total, placering, femettor} ]}}
+  const placementsPerCompetition = {};
   competitions.forEach(comp => {
-    // Gruppskyttar per klass
     const shootersByClass = {};
     klassLista.forEach(k => shootersByClass[k] = []);
     shooters.forEach(s => {
       const shooterScores = scores.filter(sc => sc.shooterId === s.id && sc.competitionId === comp.id);
       const total = shooterScores.reduce((sum, sc) => sum + (sc.total || 0), 0);
-      // Beräkna femettor över alla stationer i tävlingen
-      const femettor = shooterScores.reduce((sum, sc) => sum + (sc.shots ? sc.shots.filter(shot => shot.femetta && shot.value === 5).length : (sc.femettor || 0)), 0);
-      shootersByClass[s.klass].push({ shooterId: s.id, total, femettor });
+      // Beräkna femettor, och även per skiljemålsstation!
+      const femettorByStation = {};
+      allStations.forEach(station => {
+        femettorByStation[station] = shooterScores
+          .filter(sc => sc.station === station)
+          .reduce((sum, sc) => sum + (sc.shots ? sc.shots.filter(shot => shot.femetta && shot.value === 5).length : (sc.femettor || 0)), 0);
+      });
+      const totalFemettor = Object.values(femettorByStation).reduce((a, b) => a + b, 0);
+      shootersByClass[s.klass].push({ shooterId: s.id, total, femettorByStation, totalFemettor });
     });
-    // Sortera och ge placering per klass
     placementsPerCompetition[comp.id] = {};
     klassLista.forEach(k => {
       const arr = shootersByClass[k].filter(s => s.total > 0);
-      // Sortera med femettor som skiljemål
       arr.sort((a, b) => {
         if (b.total !== a.total) return b.total - a.total;
-        if ((b.femettor || 0) !== (a.femettor || 0)) return (b.femettor || 0) - (a.femettor || 0);
+        // Skiljemål: valda stationer
+        for (const station of skiljemalStationer) {
+          const fa = a.femettorByStation?.[station] || 0;
+          const fb = b.femettorByStation?.[station] || 0;
+          if (fb !== fa) return fb - fa;
+        }
+        // Om fortfarande lika, total femettor
+        if ((b.totalFemettor || 0) !== (a.totalFemettor || 0)) return (b.totalFemettor || 0) - (a.totalFemettor || 0);
         return 0;
       });
       placementsPerCompetition[comp.id][k] = arr.map((s, i) => ({ ...s, placering: i + 1 }));
@@ -742,6 +802,9 @@ function CupResults({ shooters, scores, competitions }) {
     doc.setFontSize(16);
     doc.text("Cupresultat – 5 bästa klassplaceringar", 105, y, { align: "center" });
     y += 10;
+    doc.setFontSize(11);
+    doc.text(`Skiljemål: ${skiljemalStationer.map(s=>"St "+s).join(", ")}`, 20, y);
+    y += 8;
     klassLista.forEach(klass => {
       doc.setFontSize(14);
       doc.text(klass, 20, y);
@@ -768,6 +831,21 @@ function CupResults({ shooters, scores, competitions }) {
       <h2 className="text-xl font-bold mb-3 text-yellow-700 flex items-center gap-2"><span>🥇</span> Cupresultat </h2>
       <div className="mb-4 flex flex-wrap gap-2 items-center">
         <button onClick={exportPDF} className="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg font-bold shadow transition">Exportera som PDF</button>
+      </div>
+      <div className="flex gap-2 mb-4 items-center">
+        <span className="font-semibold text-yellow-700">Skiljemål:</span>
+        {allStations.map(station => (
+          <label key={station} className="flex items-center gap-1">
+            <input
+              type="checkbox"
+              checked={skiljemalStationer.includes(station)}
+              onChange={() => toggleStation(station)}
+              disabled={!skiljemalStationer.includes(station) && skiljemalStationer.length >= 3}
+            />
+            <span>Station {station}</span>
+          </label>
+        ))}
+        <span className="text-xs text-gray-500 ml-2">(max 3 st)</span>
       </div>
       {klassLista.map(klass => (
         <div key={klass} className="mb-6">
@@ -807,6 +885,10 @@ function CupResults({ shooters, scores, competitions }) {
         </div>
       ))}
       <p className="mt-3 text-gray-600 text-sm">Cup-poäng = summan av de 5 bästa <b>placeringarna</b>. Lägst poäng vinner!</p>
+    </section>
+  );
+}  
+ text-sm">Cup-poäng = summan av de 5 bästa <b>placeringarna</b>. Lägst poäng vinner!</p>
     </section>
   );
 }
