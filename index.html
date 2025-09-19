@@ -630,49 +630,69 @@ function Results({ shooters, scores, competitions }) {
   klassLista.forEach(k => grouped[k]?.sort(jämförSkyttar));
 
   const exportPDF = () => {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    let y = 20;
-    doc.setFontSize(16);
-    doc.text("Resultatlista", 105, y, { align: "center" });
-    y += 10;
-    const compName = selectedComp?.name || "";
-    doc.setFontSize(13);
-    doc.text(compName, 105, y, { align: "center" });
-    y += 10;
-    doc.setFontSize(11);
-    doc.text(`Skiljemål: ${skiljemalStationer.map(s=>"St "+s).join(", ")}`, 20, y);
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  let y = 20;
+  doc.setFontSize(16);
+  doc.text("Resultatlista", 105, y, { align: "center" });
+  y += 10;
+  const compName = selectedComp?.name || "";
+  doc.setFontSize(13);
+  doc.text(compName, 105, y, { align: "center" });
+  y += 10;
+  doc.setFontSize(11);
+  doc.text(`Skiljemål: ${skiljemalStationer.map((s,i)=>`Skilje ${i+1}: St ${s}`).join(", ")}`, 20, y);
+  y += 8;
+
+  klassLista.forEach(klass => {
+    doc.setFontSize(14);
+    doc.text(klass, 20, y);
     y += 8;
-    klassLista.forEach(klass => {
-      doc.setFontSize(14);
-      doc.text(klass, 20, y);
-      y += 8;
-      doc.setFontSize(11);
-      if (!grouped[klass] || grouped[klass].length === 0) {
-        doc.text("Inga deltagare", 25, y);
-        y += 6;
-      } else {
-        grouped[klass].forEach((s, i) => {
-          const medal = i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : "";
-          let row = `${i + 1}. ${s.name} (${s.club}) - ${s.total}p ${medal}`;
-          if (allStations.length) {
-            row += " [";
-            row += allStations.map(station =>
-              `${station}: ${s.stationTotals[station] || 0}p`
-            ).join("; ");
-            row += "] Skiljemål: ";
-            row += skiljemalStationer.map((station, idx) =>
-              `Skilje ${idx+1}: ${s.stationFemettors[station] || 0}`
-            ).join(", ");
-          }
-          doc.text(row, 25, y);
-          y += 6;
-        });
-      }
-      y += 4;
+    doc.setFontSize(11);
+
+    // Tabellhuvud – exakt samma ordning och rubriker som i appen
+    let x = 20;
+    const headers = [
+      "Plats", "Skytt", "Ort",
+      ...allStations.map(st => "St " + st),
+      ...skiljemalStationer.map((st, i) => `Skilje ${i+1}`),
+      "Summa"
+    ];
+    headers.forEach(head => {
+      doc.setFont(undefined, "bold");
+      doc.text(head, x, y);
+      x += 28;
     });
-    doc.save(`resultatlista_${compName}.pdf`);
-  };
+    y += 7;
+    doc.setFont(undefined, "normal");
+
+    if (!grouped[klass] || grouped[klass].length === 0) {
+      doc.text("Inga deltagare", 25, y);
+      y += 6;
+    } else {
+      grouped[klass].forEach((s, i) => {
+        x = 20;
+        const medal = i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : "";
+        const cells = [
+          `${i+1} ${medal}`,
+          s.name,
+          s.club,
+          ...allStations.map(st => String(s.stationTotals[st] || 0)),
+          ...skiljemalStationer.map(st => String(s.stationFemettors[st] || 0)),
+          String(s.total)
+        ];
+        cells.forEach(cell => {
+          doc.text(cell, x, y);
+          x += 28;
+        });
+        y += 7;
+        if (y > 270) { doc.addPage(); y = 20; }
+      });
+    }
+    y += 4;
+  });
+  doc.save(`resultatlista_${compName}.pdf`);
+};
 
   return (
     <section>
