@@ -198,83 +198,137 @@
 
     // --- Competitions ---
     function Competitions({ competitions, user }) {
-      const [name, setName] = React.useState("");
-      const [date, setDate] = React.useState("");
-      const [editId, setEditId] = React.useState(null);
-      const [editName, setEditName] = React.useState("");
-      const [editDate, setEditDate] = React.useState("");
+  const [name, setName] = React.useState("");
+  const [date, setDate] = React.useState("");
+  const [skiljemal, setSkiljemal] = React.useState([]);
+  const [editId, setEditId] = React.useState(null);
+  const [editName, setEditName] = React.useState("");
+  const [editDate, setEditDate] = React.useState("");
+  const [editSkiljemal, setEditSkiljemal] = React.useState([]);
 
-      const addCompetition = async () => {
-        if (!user) return alert("Du måste vara inloggad!");
-        if (!name || !date) return;
-        await addDoc(collection(db, "competitions"), { name, date });
-        setName(""); setDate("");
-      };
+  const stationer = [1, 2, 3, 4, 5, 6, 7];
 
-      const startEdit = (c) => {
-        setEditId(c.id);
-        setEditName(c.name);
-        setEditDate(c.date);
-      };
+  function toggleSkiljemal(station) {
+    setSkiljemal(prev =>
+      prev.includes(station)
+        ? prev.filter(s => s !== station)
+        : prev.length < 3 ? [...prev, station] : prev
+    );
+  }
 
-      const saveEdit = async () => {
-        if (!user) return alert("Du måste vara inloggad!");
-        if (!editName || !editDate) return;
-        await updateDoc(doc(db, "competitions", editId), { name: editName, date: editDate });
-        setEditId(null); setEditName(""); setEditDate("");
-      };
+  function toggleEditSkiljemal(station) {
+    setEditSkiljemal(prev =>
+      prev.includes(station)
+        ? prev.filter(s => s !== station)
+        : prev.length < 3 ? [...prev, station] : prev
+    );
+  }
 
-      const cancelEdit = () => {
-        setEditId(null); setEditName(""); setEditDate("");
-      };
+  const addCompetition = async () => {
+    if (!user) return alert("Du måste vara inloggad!");
+    if (!name || !date || skiljemal.length === 0) return alert("Fyll i namn, datum och minst 1 skiljemålsstation!");
+    await addDoc(collection(db, "competitions"), { name, date, skiljemal });
+    setName(""); setDate(""); setSkiljemal([]);
+  };
 
-      const removeCompetition = async (id) => {
-        if (!user) return alert("Du måste vara inloggad!");
-        if (!window.confirm("Ta bort deltävlingen?")) return;
-        await deleteDoc(doc(db, "competitions", id));
-      };
+  const startEdit = (c) => {
+    setEditId(c.id);
+    setEditName(c.name);
+    setEditDate(c.date);
+    setEditSkiljemal(c.skiljemal || []);
+  };
 
-      return (
-        <section>
-          <h2 className="text-xl font-bold mb-3 text-blue-700 flex items-center gap-2"><span>📅</span> Deltävlingar</h2>
-          <div className="flex flex-col md:flex-row gap-2 mb-4">
-            <input value={name} onChange={e=>setName(e.target.value)} placeholder="Namn"
-              className="border p-3 rounded-lg flex-1 focus:ring-blue-400 focus:ring-2" />
-            <input type="date" value={date} onChange={e=>setDate(e.target.value)}
-              className="border p-3 rounded-lg focus:ring-blue-400 focus:ring-2" />
-            <button onClick={addCompetition}
-              className={`bg-green-500 text-white px-4 py-2 rounded-lg font-semibold transition shadow ${!user ? "opacity-40 cursor-not-allowed" : ""}`}
-              disabled={!user}>Lägg till</button>
-          </div>
-          {!user && <p className="text-red-500 text-sm mb-2">Logga in för att lägga till/ändra/tar bort deltävlingar.</p>}
-          <ul className="divide-y">
-            {competitions.map(c=>
-              <li key={c.id} className="py-3 flex flex-col md:flex-row md:items-center justify-between gap-2">
-                {editId === c.id ? (
-                  <>
-                    <input value={editName} onChange={e=>setEditName(e.target.value)} className="border p-2 rounded flex-1 mb-2 md:mb-0"/>
-                    <input type="date" value={editDate} onChange={e=>setEditDate(e.target.value)} className="border p-2 rounded flex-1 mb-2 md:mb-0"/>
-                    <div className="flex gap-2">
-                      <button onClick={saveEdit} disabled={!user} className={`bg-green-600 text-white px-3 py-1 rounded ${!user?"opacity-40 cursor-not-allowed":""}`}>Spara</button>
-                      <button onClick={cancelEdit} className="bg-gray-300 px-3 py-1 rounded">Avbryt</button>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <span className="font-medium flex-1">{c.name}</span>
-                    <span className="text-gray-500 flex-1">{c.date}</span>
-                    <div className="flex gap-2">
-                      <button onClick={()=>startEdit(c)} disabled={!user} className={`bg-blue-100 text-blue-700 px-3 py-1 rounded ${!user?"opacity-40 cursor-not-allowed":""}`}>Redigera</button>
-                      <button onClick={()=>removeCompetition(c.id)} disabled={!user} className={`bg-red-100 text-red-700 px-3 py-1 rounded ${!user?"opacity-40 cursor-not-allowed":""}`}>Ta bort</button>
-                    </div>
-                  </>
-                )}
-              </li>
+  const saveEdit = async () => {
+    if (!user) return alert("Du måste vara inloggad!");
+    if (!editName || !editDate || editSkiljemal.length === 0) return alert("Fyll i namn, datum och minst 1 skiljemålsstation!");
+    await updateDoc(doc(db, "competitions", editId), { name: editName, date: editDate, skiljemal: editSkiljemal });
+    setEditId(null); setEditName(""); setEditDate(""); setEditSkiljemal([]);
+  };
+
+  const cancelEdit = () => {
+    setEditId(null); setEditName(""); setEditDate(""); setEditSkiljemal([]);
+  };
+
+  const removeCompetition = async (id) => {
+    if (!user) return alert("Du måste vara inloggad!");
+    if (!window.confirm("Ta bort deltävlingen?")) return;
+    await deleteDoc(doc(db, "competitions", id));
+  };
+
+  return (
+    <section>
+      <h2 className="text-xl font-bold mb-3 text-blue-700 flex items-center gap-2"><span>📅</span> Deltävlingar</h2>
+      <div className="flex flex-col md:flex-row gap-2 mb-4">
+        <input value={name} onChange={e=>setName(e.target.value)} placeholder="Namn"
+          className="border p-3 rounded-lg flex-1 focus:ring-blue-400 focus:ring-2" />
+        <input type="date" value={date} onChange={e=>setDate(e.target.value)}
+          className="border p-3 rounded-lg focus:ring-blue-400 focus:ring-2" />
+        <div className="flex gap-2 items-center mb-2">
+          <span className="font-semibold text-blue-700">Skiljemål:</span>
+          {stationer.map(station => (
+            <label key={station} className="flex items-center gap-1">
+              <input
+                type="checkbox"
+                checked={skiljemal.includes(station)}
+                onChange={() => toggleSkiljemal(station)}
+                disabled={!skiljemal.includes(station) && skiljemal.length >= 3}
+              />
+              <span>St {station}</span>
+            </label>
+          ))}
+          <span className="text-xs text-gray-500 ml-2">(max 3 st)</span>
+        </div>
+        <button onClick={addCompetition}
+          className={`bg-green-500 text-white px-4 py-2 rounded-lg font-semibold transition shadow ${!user ? "opacity-40 cursor-not-allowed" : ""}`}
+          disabled={!user}>Lägg till</button>
+      </div>
+      {!user && <p className="text-red-500 text-sm mb-2">Logga in för att lägga till/ändra/tar bort deltävlingar.</p>}
+      <ul className="divide-y">
+        {competitions.map(c=>
+          <li key={c.id} className="py-3 flex flex-col md:flex-row md:items-center justify-between gap-2">
+            {editId === c.id ? (
+              <>
+                <input value={editName} onChange={e=>setEditName(e.target.value)} className="border p-2 rounded flex-1 mb-2 md:mb-0"/>
+                <input type="date" value={editDate} onChange={e=>setEditDate(e.target.value)} className="border p-2 rounded flex-1 mb-2 md:mb-0"/>
+                <div className="flex gap-2 items-center mb-2">
+                  <span className="font-semibold text-blue-700">Skiljemål:</span>
+                  {stationer.map(station => (
+                    <label key={station} className="flex items-center gap-1">
+                      <input
+                        type="checkbox"
+                        checked={editSkiljemal.includes(station)}
+                        onChange={() => toggleEditSkiljemal(station)}
+                        disabled={!editSkiljemal.includes(station) && editSkiljemal.length >= 3}
+                      />
+                      <span>St {station}</span>
+                    </label>
+                  ))}
+                  <span className="text-xs text-gray-500 ml-2">(max 3 st)</span>
+                </div>
+                <div className="flex gap-2">
+                  <button onClick={saveEdit} disabled={!user} className={`bg-green-600 text-white px-3 py-1 rounded ${!user?"opacity-40 cursor-not-allowed":""}`}>Spara</button>
+                  <button onClick={cancelEdit} className="bg-gray-300 px-3 py-1 rounded">Avbryt</button>
+                </div>
+              </>
+            ) : (
+              <>
+                <span className="font-medium flex-1">{c.name}</span>
+                <span className="text-gray-500 flex-1">{c.date}</span>
+                <span className="flex-1 text-blue-700 text-xs">
+                  Skiljemål: {c.skiljemal ? c.skiljemal.map(s => `St ${s}`).join(", ") : "–"}
+                </span>
+                <div className="flex gap-2">
+                  <button onClick={()=>startEdit(c)} disabled={!user} className={`bg-blue-100 text-blue-700 px-3 py-1 rounded ${!user?"opacity-40 cursor-not-allowed":""}`}>Redigera</button>
+                  <button onClick={()=>removeCompetition(c.id)} disabled={!user} className={`bg-red-100 text-red-700 px-3 py-1 rounded ${!user?"opacity-40 cursor-not-allowed":""}`}>Ta bort</button>
+                </div>
+              </>
             )}
-          </ul>
-        </section>
-      );
-    }
+          </li>
+        )}
+      </ul>
+    </section>
+  );
+}
 
     // --- Shooters ---
     function Shooters({ shooters, user }) {
