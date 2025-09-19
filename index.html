@@ -658,9 +658,12 @@ function Results({ shooters, scores, competitions }) {
           if (allStations.length) {
             row += " [";
             row += allStations.map(station =>
-              `${station}: ${s.stationTotals[station] || 0}p, femettor: ${s.stationFemettors[station] || 0}`
+              `${station}: ${s.stationTotals[station] || 0}p`
             ).join("; ");
-            row += "]";
+            row += "] Skiljemål: ";
+            row += skiljemalStationer.map((station, idx) =>
+              `Skilje ${idx+1}: ${s.stationFemettors[station] || 0}`
+            ).join(", ");
           }
           doc.text(row, 25, y);
           y += 6;
@@ -703,8 +706,8 @@ function Results({ shooters, scores, competitions }) {
                   {allStations.map(station => (
                     <th className="p-2 text-left" key={station}>St {station}</th>
                   ))}
-                  {allStations.map(station => (
-                    <th className="p-2 text-left" key={"f" + station}>Femettor {station}</th>
+                  {skiljemalStationer.map((station, idx) => (
+                    <th className="p-2 text-left" key={"skilje" + station}>Skilje {idx+1}</th>
                   ))}
                   <th className="p-2 text-left">Summa</th>
                 </tr>
@@ -723,8 +726,10 @@ function Results({ shooters, scores, competitions }) {
                       {allStations.map(station => (
                         <td className="p-2 font-mono" key={station}>{s.stationTotals[station] || 0}</td>
                       ))}
-                      {allStations.map(station => (
-                        <td className="p-2 font-mono text-blue-700" key={"f" + station}>{s.stationFemettors[station] || 0}</td>
+                      {skiljemalStationer.map((station, idx) => (
+                        <td className="p-2 font-mono text-blue-700" key={"skilje" + station}>
+                          {s.stationFemettors[station] || 0}
+                        </td>
                       ))}
                       <td className="p-2 font-bold text-blue-700">{s.total}</td>
                     </tr>
