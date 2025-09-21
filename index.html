@@ -255,8 +255,8 @@
           <nav className="flex flex-wrap gap-2 mb-8 justify-center md:justify-start">
             <TabBtn active={tab==="competitions"} onClick={()=>setTab("competitions")} icon={<CalendarIcon />}>Deltävlingar</TabBtn>
             <TabBtn active={tab==="shooters"} onClick={()=>setTab("shooters")} icon={<UsersIcon />}>Skyttar</TabBtn>
-            <TabBtn active={tab==="scores"} onClick={()=>setTab("scores")} icon={<ClipboardIcon />}>Poäng</TabBtn>
-            <TabBtn active={tab==="results"} onClick={()=>setTab("results")} icon={<TrophyIcon />}>Resultatlista</TabBtn>
+            <TabBtn active={tab==="scores"} onClick={()=>setTab("scores")} icon={<ClipboardIcon />}>Registrera Poäng</TabBtn>
+            <TabBtn active={tab==="results"} onClick={()=>setTab("results")} icon={<TrophyIcon />}>Resultatlistor</TabBtn>
             <TabBtn active={tab==="cup"} onClick={()=>setTab("cup")} icon={<AwardIcon />}>Cupresultat</TabBtn>
           </nav>
           {tab==="competitions" && <Competitions competitions={competitions} user={user} />}
