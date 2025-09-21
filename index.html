@@ -777,13 +777,10 @@
 }
 
     // --- CupResults ---
- function CupResults({ shooters, scores, competitions }) {
+function CupResults({ shooters, scores, competitions }) {
   const klassLista = ["öppen", "dam", "veteran", "ungdom", "junior med stöd"];
-  const maxCompetitions = competitions.length;
-  const competitionIdsSorted = competitions
-    .slice()
-    .sort((a, b) => a.date.localeCompare(b.date))
-    .map(c => c.id);
+  const competitionSorted = competitions.slice().sort((a, b) => a.date.localeCompare(b.date));
+  const competitionIdsSorted = competitionSorted.map(c => c.id);
 
   // Steg 1: Placeringar per deltävling, per klass
   const placementsPerCompetition = {};
@@ -806,7 +803,7 @@
   // Steg 2: Bygg cupresultat per skytt (klassvis placeringar per deltävling)
   const grouped = {};
   shooters.forEach(s => {
-    // Placering per deltävling (deltävlingarnas ordning matchar competitionIdsSorted)
+    // Placering per deltävling (ordning och namn matchar competitionSorted)
     const placings = competitionIdsSorted.map(compId => {
       const klassPlacings = placementsPerCompetition[compId]?.[s.klass] || [];
       const p = klassPlacings.find(ss => ss.shooterId === s.id);
@@ -814,7 +811,7 @@
     });
     // Endast de 5 bästa (lägsta) placeringarna räknas
     const sumPlacings = placings
-      .slice() // kopiera
+      .slice()
       .sort((a, b) => a - b)
       .slice(0, 5)
       .reduce((a, b) => a + b, 0);
@@ -831,7 +828,7 @@
     if (grouped[klass]) grouped[klass].sort((a, b) => a.sumPlacings - b.sumPlacings);
   });
 
-  // PDF-export med jsPDF-autotable
+  // PDF-export med jsPDF-autotable och tävlingsnamn
   function exportPDF() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({
@@ -846,7 +843,7 @@
     let startY = 28;
     klassLista.forEach(klass => {
       const headers = [
-        ["Skytt", "Ort", ...competitions.map((c, idx) => `Deltävling ${idx+1}`), "Summa (5 bästa)"]
+        ["Skytt", "Ort", ...competitionSorted.map(c => c.name), "Summa (5 bästa)"]
       ];
       const rows = [];
       if (grouped[klass] && grouped[klass].length > 0) {
@@ -906,8 +903,8 @@
                 <tr className="bg-yellow-50">
                   <th className="p-2 text-left">Skytt</th>
                   <th className="p-2 text-left">Ort</th>
-                  {competitions.map((c, idx) => (
-                    <th className="p-2 text-left" key={c.id}>Deltävling {idx+1}</th>
+                  {competitionSorted.map(c => (
+                    <th className="p-2 text-left" key={c.id}>{c.name}</th>
                   ))}
                   <th className="p-2 text-left">Summa (5 bästa)</th>
                 </tr>
@@ -915,7 +912,7 @@
               <tbody>
                 {(!grouped[klass] || grouped[klass].length === 0) ? (
                   <tr>
-                    <td className="p-2 text-gray-400" colSpan={2 + competitions.length + 1}>Inga deltagare</td>
+                    <td className="p-2 text-gray-400" colSpan={2 + competitionSorted.length + 1}>Inga deltagare</td>
                   </tr>
                 ) : (
                   grouped[klass].map((s, i) => (
