@@ -776,7 +776,7 @@
   );
 }
 
-    // --- CupResults ---
+   // --- CupResults ---
 function CupResults({ shooters, scores, competitions }) {
   const klassLista = ["öppen", "dam", "veteran", "ungdom", "junior med stöd"];
   const competitionSorted = competitions.slice().sort((a, b) => a.date.localeCompare(b.date));
@@ -843,12 +843,13 @@ function CupResults({ shooters, scores, competitions }) {
     let startY = 28;
     klassLista.forEach(klass => {
       const headers = [
-        ["Skytt", "Ort", ...competitionSorted.map(c => c.name), "Summa (5 bästa)"]
+        ["Plats", "Skytt", "Ort", ...competitionSorted.map(c => c.name), "Summa (5 bästa)"]
       ];
       const rows = [];
       if (grouped[klass] && grouped[klass].length > 0) {
         grouped[klass].forEach((s, i) => {
           rows.push([
+            i + 1,
             s.name,
             s.club,
             ...s.placings.map(p => p === 1000 ? "-" : p),
@@ -901,6 +902,7 @@ function CupResults({ shooters, scores, competitions }) {
             <table className="min-w-full border rounded-lg text-sm">
               <thead>
                 <tr className="bg-yellow-50">
+                  <th className="p-2 text-left">Plats</th>
                   <th className="p-2 text-left">Skytt</th>
                   <th className="p-2 text-left">Ort</th>
                   {competitionSorted.map(c => (
@@ -912,11 +914,12 @@ function CupResults({ shooters, scores, competitions }) {
               <tbody>
                 {(!grouped[klass] || grouped[klass].length === 0) ? (
                   <tr>
-                    <td className="p-2 text-gray-400" colSpan={2 + competitionSorted.length + 1}>Inga deltagare</td>
+                    <td className="p-2 text-gray-400" colSpan={3 + competitionSorted.length + 1}>Inga deltagare</td>
                   </tr>
                 ) : (
                   grouped[klass].map((s, i) => (
                     <tr key={s.id} className="border-b">
+                      <td className="p-2">{i + 1}</td>
                       <td className="p-2 font-semibold">{s.name}</td>
                       <td className="p-2">{s.club}</td>
                       {s.placings.map((p, idx) => (
@@ -938,7 +941,6 @@ function CupResults({ shooters, scores, competitions }) {
     </section>
   );
 }
-
     // Sista raden:
     ReactDOM.createRoot(document.getElementById("app")).render(<App />);
   </script>
