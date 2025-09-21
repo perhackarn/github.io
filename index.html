@@ -4,45 +4,77 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Landbys Cup</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          },
+          colors: {
+            primary: {
+              50: '#f8fafc',
+              100: '#f1f5f9',
+              200: '#e2e8f0',
+              300: '#cbd5e1',
+              400: '#94a3b8',
+              500: '#64748b',
+              600: '#475569',
+              700: '#334155',
+              800: '#1e293b',
+              900: '#0f172a',
+            }
+          }
+        }
+      }
+    }
+  </script>
   <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
 </head>
-<body class="bg-gradient-to-b from-blue-100 to-white min-h-screen">
+<body class="bg-gray-50 min-h-screen font-sans">
 
   <!-- Header -->
-  <header class="w-full py-4 bg-blue-600 shadow-lg sticky top-0 z-10">
-    <div class="max-w-3xl mx-auto px-4 flex justify-between items-center">
-      <h1 class="text-xl md:text-2xl font-extrabold text-white tracking-wide flex items-center gap-2">
-        <svg class="w-7 h-7 text-yellow-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+  <header class="w-full py-4 bg-primary-800 shadow-sm sticky top-0 z-10 border-b border-primary-700">
+    <div class="max-w-6xl mx-auto px-4 flex justify-between items-center">
+      <h1 class="text-xl md:text-2xl font-semibold text-white tracking-tight flex items-center gap-3">
+        <svg class="w-8 h-8 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10"/>
+          <circle cx="12" cy="12" r="6"/>
+          <circle cx="12" cy="12" r="2"/>
+        </svg>
         Landbys Cup
       </h1>
-      <div id="header-auth"></div>
+      <div id="header-auth" class="text-primary-200 text-sm"></div>
     </div>
   </header>
 
   <!-- Login-box -->
-  <div id="login-box" class="p-6 bg-white rounded-2xl shadow-lg max-w-xs mx-auto mt-10 border border-blue-100">
-    <h2 class="text-lg font-bold mb-3 text-center text-blue-700">Logga in</h2>
+  <div id="login-box" class="p-6 bg-white rounded-xl shadow-sm max-w-md mx-auto mt-8 border border-primary-200">
+    <h2 class="text-lg font-semibold mb-4 text-center text-primary-800">Logga in</h2>
     <input id="email" type="email" placeholder="E-post"
-      class="border p-3 w-full mb-2 rounded-lg focus:ring-blue-400 focus:ring-2 transition">
+      class="border border-primary-300 p-3 w-full mb-3 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors">
     <input id="password" type="password" placeholder="Lösenord"
-      class="border p-3 w-full mb-2 rounded-lg focus:ring-blue-400 focus:ring-2 transition">
+      class="border border-primary-300 p-3 w-full mb-4 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors">
     <button id="loginEmail"
-      class="w-full bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-md font-semibold transition">Logga in</button>
+      class="w-full bg-primary-700 hover:bg-primary-800 text-white px-4 py-3 rounded-lg font-medium transition-colors">Logga in</button>
   </div>
 
   <!-- User-box -->
-  <div id="user-box" class="hidden p-4 bg-green-50 rounded-2xl shadow max-w-xs mx-auto mt-10 text-center border border-green-200">
-    <p class="mb-2 text-green-800">Inloggad som <span id="user-email" class="font-bold"></span></p>
-    <button id="logoutBtn" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded font-semibold transition">Logga ut</button>
+  <div id="user-box" class="hidden p-4 bg-white rounded-xl shadow-sm max-w-md mx-auto mt-8 text-center border border-primary-200">
+    <p class="mb-3 text-primary-700">Inloggad som <span id="user-email" class="font-medium text-primary-800"></span></p>
+    <button id="logoutBtn" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-medium transition-colors">Logga ut</button>
   </div>
 
   <!-- React app -->
-  <main class="max-w-3xl mx-auto mt-6 px-2 pb-10">
+  <main class="max-w-6xl mx-auto mt-6 px-4 pb-10">
     <div id="app"></div>
   </main>
 
@@ -83,9 +115,9 @@
 
     function renderHeaderAuth(user) {
       if (user) {
-        headerAuth.innerHTML = `<span class="text-white text-sm mr-2">Hej, <b>${user.email || user.displayName}</b></span>`;
+        headerAuth.innerHTML = `<span class="text-primary-200 text-sm">Hej, <span class="font-medium text-white">${user.email || user.displayName}</span></span>`;
       } else {
-        headerAuth.innerHTML = `<span class="text-white text-sm">Ej inloggad</span>`;
+        headerAuth.innerHTML = `<span class="text-primary-300 text-sm">Ej inloggad</span>`;
       }
     }
 
@@ -125,6 +157,56 @@
   <script type="text/babel">
     const { db, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy } = window.firestore;
 
+    // SVG Icon Components
+    const CalendarIcon = ({ className = "w-5 h-5" }) => (
+      <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+        <line x1="16" y1="2" x2="16" y2="6"/>
+        <line x1="8" y1="2" x2="8" y2="6"/>
+        <line x1="3" y1="10" x2="21" y2="10"/>
+      </svg>
+    );
+
+    const TargetIcon = ({ className = "w-5 h-5" }) => (
+      <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="10"/>
+        <circle cx="12" cy="12" r="6"/>
+        <circle cx="12" cy="12" r="2"/>
+      </svg>
+    );
+
+    const ClipboardIcon = ({ className = "w-5 h-5" }) => (
+      <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+      </svg>
+    );
+
+    const TrophyIcon = ({ className = "w-5 h-5" }) => (
+      <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
+        <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
+        <path d="M4 22h16"/>
+        <path d="M10 14.66V17c0 .55.47.98.97 1.21C12.04 18.75 14 20 16 20s4-1.25 5.03-1.79c.5-.23.97-.66.97-1.21v-2.34"/>
+        <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
+      </svg>
+    );
+
+    const AwardIcon = ({ className = "w-5 h-5" }) => (
+      <svg className={className} fill="currentColor" viewBox="0 0 24 24">
+        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+      </svg>
+    );
+
+    const UsersIcon = ({ className = "w-5 h-5" }) => (
+      <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+        <circle cx="9" cy="7" r="4"/>
+        <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+      </svg>
+    );
+
     function useAuth() {
       const [user, setUser] = React.useState(window.firebaseAuth.auth.currentUser);
       React.useEffect(() => {
@@ -162,20 +244,20 @@
 
       if (!user) {
         return (
-          <div className="bg-white rounded-2xl shadow-lg p-4 md:p-8 mt-4">
+          <div className="bg-white rounded-xl shadow-sm p-6 md:p-8 mt-6 border border-primary-200">
             <Results shooters={shooters} scores={scores} competitions={competitions} />
           </div>
         );
       }
 
       return (
-        <div className="bg-white rounded-2xl shadow-lg p-4 md:p-8 mt-4">
-          <nav className="flex flex-wrap gap-2 mb-6 justify-center md:justify-start">
-            <TabBtn active={tab==="competitions"} onClick={()=>setTab("competitions")} icon="📅">Deltävlingar</TabBtn>
-            <TabBtn active={tab==="shooters"} onClick={()=>setTab("shooters")} icon="🎯">Skyttar</TabBtn>
-            <TabBtn active={tab==="scores"} onClick={()=>setTab("scores")} icon="📝">Poäng</TabBtn>
-            <TabBtn active={tab==="results"} onClick={()=>setTab("results")} icon="🏆">Resultatlista</TabBtn>
-            <TabBtn active={tab==="cup"} onClick={()=>setTab("cup")} icon="🥇">Cupresultat</TabBtn>
+        <div className="bg-white rounded-xl shadow-sm p-6 md:p-8 mt-6 border border-primary-200">
+          <nav className="flex flex-wrap gap-2 mb-8 justify-center md:justify-start">
+            <TabBtn active={tab==="competitions"} onClick={()=>setTab("competitions")} icon={<CalendarIcon />}>Deltävlingar</TabBtn>
+            <TabBtn active={tab==="shooters"} onClick={()=>setTab("shooters")} icon={<UsersIcon />}>Skyttar</TabBtn>
+            <TabBtn active={tab==="scores"} onClick={()=>setTab("scores")} icon={<ClipboardIcon />}>Poäng</TabBtn>
+            <TabBtn active={tab==="results"} onClick={()=>setTab("results")} icon={<TrophyIcon />}>Resultatlista</TabBtn>
+            <TabBtn active={tab==="cup"} onClick={()=>setTab("cup")} icon={<AwardIcon />}>Cupresultat</TabBtn>
           </nav>
           {tab==="competitions" && <Competitions competitions={competitions} user={user} />}
           {tab==="shooters" && <Shooters shooters={shooters} user={user} />}
@@ -189,9 +271,13 @@
     function TabBtn({active, onClick, icon, children}) {
       return (
         <button
-          className={`flex-1 min-w-[120px] px-3 py-2 rounded-lg font-semibold flex items-center justify-center gap-2 transition shadow-sm ${active ? "bg-blue-600 text-white" : "bg-gray-100 hover:bg-blue-200"}`}
+          className={`flex-1 min-w-[140px] px-4 py-3 rounded-lg font-medium flex items-center justify-center gap-2 transition-all duration-200 border ${
+            active 
+              ? "bg-primary-700 text-white border-primary-700 shadow-sm" 
+              : "bg-primary-50 text-primary-700 border-primary-200 hover:bg-primary-100 hover:border-primary-300"
+          }`}
           onClick={onClick}>
-          <span className="text-lg">{icon}</span>
+          <span className="flex-shrink-0">{icon}</span>
           <span>{children}</span>
         </button>
       );
@@ -258,75 +344,80 @@
 
   return (
     <section>
-      <h2 className="text-xl font-bold mb-3 text-blue-700 flex items-center gap-2"><span>📅</span> Deltävlingar</h2>
-      <div className="flex flex-col md:flex-row gap-2 mb-4">
+      <h2 className="text-xl font-semibold mb-6 text-primary-800 flex items-center gap-3">
+        <CalendarIcon className="w-6 h-6" />
+        Deltävlingar
+      </h2>
+      <div className="flex flex-col md:flex-row gap-4 mb-6">
         <input value={name} onChange={e=>setName(e.target.value)} placeholder="Namn"
-          className="border p-3 rounded-lg flex-1 focus:ring-blue-400 focus:ring-2" />
+          className="border border-primary-300 p-3 rounded-lg flex-1 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors" />
         <input type="date" value={date} onChange={e=>setDate(e.target.value)}
-          className="border p-3 rounded-lg focus:ring-blue-400 focus:ring-2" />
-        <div className="flex gap-2 items-center mb-2">
-          <span className="font-semibold text-blue-700">Skiljemål:</span>
+          className="border border-primary-300 p-3 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors" />
+        <div className="flex gap-3 items-center mb-2">
+          <span className="font-medium text-primary-700">Skiljemål:</span>
           {stationer.map(station => (
-            <label key={station} className="flex items-center gap-1">
+            <label key={station} className="flex items-center gap-1 text-sm">
               <input
                 type="checkbox"
                 checked={skiljemal.includes(station)}
                 onChange={() => toggleSkiljemal(station)}
                 disabled={!skiljemal.includes(station) && skiljemal.length >= 3}
+                className="rounded border-primary-300 text-primary-600 focus:ring-primary-500"
               />
-              <span>St {station}</span>
+              <span className="text-primary-700">St {station}</span>
             </label>
           ))}
-          <span className="text-xs text-gray-500 ml-2">(max 3 st)</span>
+          <span className="text-xs text-primary-500 ml-2">(max 3 st)</span>
         </div>
         <button onClick={addCompetition}
-          className={`bg-green-500 text-white px-4 py-2 rounded-lg font-semibold transition shadow ${!user ? "opacity-40 cursor-not-allowed" : ""}`}
+          className={`bg-green-600 hover:bg-green-700 text-white px-4 py-3 rounded-lg font-medium transition-colors shadow-sm ${!user ? "opacity-50 cursor-not-allowed" : ""}`}
           disabled={!user}>Lägg till</button>
       </div>
-      {!user && <p className="text-red-500 text-sm mb-2">Logga in för att lägga till/ändra/tar bort deltävlingar.</p>}
-      <ul className="divide-y">
+      {!user && <p className="text-red-600 text-sm mb-4 bg-red-50 p-3 rounded-lg border border-red-200">Logga in för att lägga till/ändra/tar bort deltävlingar.</p>}
+      <div className="space-y-1">
         {competitions.map(c=>
-          <li key={c.id} className="py-3 flex flex-col md:flex-row md:items-center justify-between gap-2">
+          <div key={c.id} className="py-4 px-4 bg-primary-50 rounded-lg border border-primary-200 flex flex-col md:flex-row md:items-center justify-between gap-3">
             {editId === c.id ? (
               <>
-                <input value={editName} onChange={e=>setEditName(e.target.value)} className="border p-2 rounded flex-1 mb-2 md:mb-0"/>
-                <input type="date" value={editDate} onChange={e=>setEditDate(e.target.value)} className="border p-2 rounded flex-1 mb-2 md:mb-0"/>
+                <input value={editName} onChange={e=>setEditName(e.target.value)} className="border border-primary-300 p-2 rounded-lg flex-1 mb-2 md:mb-0"/>
+                <input type="date" value={editDate} onChange={e=>setEditDate(e.target.value)} className="border border-primary-300 p-2 rounded-lg flex-1 mb-2 md:mb-0"/>
                 <div className="flex gap-2 items-center mb-2">
-                  <span className="font-semibold text-blue-700">Skiljemål:</span>
+                  <span className="font-medium text-primary-700">Skiljemål:</span>
                   {stationer.map(station => (
-                    <label key={station} className="flex items-center gap-1">
+                    <label key={station} className="flex items-center gap-1 text-sm">
                       <input
                         type="checkbox"
                         checked={editSkiljemal.includes(station)}
                         onChange={() => toggleEditSkiljemal(station)}
                         disabled={!editSkiljemal.includes(station) && editSkiljemal.length >= 3}
+                        className="rounded border-primary-300 text-primary-600 focus:ring-primary-500"
                       />
-                      <span>St {station}</span>
+                      <span className="text-primary-700">St {station}</span>
                     </label>
                   ))}
-                  <span className="text-xs text-gray-500 ml-2">(max 3 st)</span>
+                  <span className="text-xs text-primary-500 ml-2">(max 3 st)</span>
                 </div>
                 <div className="flex gap-2">
-                  <button onClick={saveEdit} disabled={!user} className={`bg-green-600 text-white px-3 py-1 rounded ${!user?"opacity-40 cursor-not-allowed":""}`}>Spara</button>
-                  <button onClick={cancelEdit} className="bg-gray-300 px-3 py-1 rounded">Avbryt</button>
+                  <button onClick={saveEdit} disabled={!user} className={`bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg font-medium transition-colors ${!user?"opacity-50 cursor-not-allowed":""}`}>Spara</button>
+                  <button onClick={cancelEdit} className="bg-primary-200 hover:bg-primary-300 text-primary-700 px-3 py-2 rounded-lg font-medium transition-colors">Avbryt</button>
                 </div>
               </>
             ) : (
               <>
-                <span className="font-medium flex-1">{c.name}</span>
-                <span className="text-gray-500 flex-1">{c.date}</span>
-                <span className="flex-1 text-blue-700 text-xs">
+                <span className="font-medium flex-1 text-primary-800">{c.name}</span>
+                <span className="text-primary-600 flex-1">{c.date}</span>
+                <span className="flex-1 text-primary-700 text-sm">
                   Skiljemål: {c.skiljemal ? c.skiljemal.map(s => `St ${s}`).join(", ") : "–"}
                 </span>
                 <div className="flex gap-2">
-                  <button onClick={()=>startEdit(c)} disabled={!user} className={`bg-blue-100 text-blue-700 px-3 py-1 rounded ${!user?"opacity-40 cursor-not-allowed":""}`}>Redigera</button>
-                  <button onClick={()=>removeCompetition(c.id)} disabled={!user} className={`bg-red-100 text-red-700 px-3 py-1 rounded ${!user?"opacity-40 cursor-not-allowed":""}`}>Ta bort</button>
+                  <button onClick={()=>startEdit(c)} disabled={!user} className={`bg-primary-100 hover:bg-primary-200 text-primary-700 px-3 py-2 rounded-lg font-medium transition-colors ${!user?"opacity-50 cursor-not-allowed":""}`}>Redigera</button>
+                  <button onClick={()=>removeCompetition(c.id)} disabled={!user} className={`bg-red-100 hover:bg-red-200 text-red-700 px-3 py-2 rounded-lg font-medium transition-colors ${!user?"opacity-50 cursor-not-allowed":""}`}>Ta bort</button>
                 </div>
               </>
             )}
-          </li>
+          </div>
         )}
-      </ul>
+      </div>
     </section>
   );
 }
@@ -383,15 +474,18 @@
 
   return (
     <section>
-      <h2 className="text-xl font-bold mb-3 text-blue-700 flex items-center gap-2"><span>🎯</span> Skyttar</h2>
+      <h2 className="text-xl font-semibold mb-6 text-primary-800 flex items-center gap-3">
+        <UsersIcon className="w-6 h-6" />
+        Skyttar
+      </h2>
       <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Sök skytt, ort eller startnummer..."
-        className="border p-3 rounded-lg w-full mb-4 focus:ring-blue-400 focus:ring-2"/>
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-2 mb-4">
+        className="border border-primary-300 p-3 rounded-lg w-full mb-6 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"/>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <input value={name} onChange={e=>setName(e.target.value)} placeholder="Namn"
-          className="border p-3 rounded-lg focus:ring-blue-400 focus:ring-2"/>
+          className="border border-primary-300 p-3 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"/>
         <input value={club} onChange={e=>setClub(e.target.value)} placeholder="Ort"
-          className="border p-3 rounded-lg focus:ring-blue-400 focus:ring-2"/>
-        <select value={klass} onChange={e=>setKlass(e.target.value)} className="border p-3 rounded-lg">
+          className="border border-primary-300 p-3 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"/>
+        <select value={klass} onChange={e=>setKlass(e.target.value)} className="border border-primary-300 p-3 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors">
           <option>öppen</option>
           <option>dam</option>
           <option>veteran</option>
@@ -399,18 +493,18 @@
           <option>junior med stöd</option>
         </select>
         <button onClick={addShooter}
-          className={`bg-green-500 text-white px-4 py-2 rounded-lg font-semibold transition shadow ${!user ? "opacity-40 cursor-not-allowed" : ""}`}
+          className={`bg-green-600 hover:bg-green-700 text-white px-4 py-3 rounded-lg font-medium transition-colors shadow-sm ${!user ? "opacity-50 cursor-not-allowed" : ""}`}
           disabled={!user}>Lägg till</button>
       </div>
-      {!user && <p className="text-red-500 text-sm mb-2">Logga in för att lägga till/ändra/tar bort skyttar.</p>}
-      <ul className="divide-y">
+      {!user && <p className="text-red-600 text-sm mb-4 bg-red-50 p-3 rounded-lg border border-red-200">Logga in för att lägga till/ändra/tar bort skyttar.</p>}
+      <div className="space-y-1">
         {filteredShooters.map(s=>
-          <li key={s.id} className="py-3 flex flex-col md:flex-row md:items-center justify-between gap-2">
+          <div key={s.id} className="py-4 px-4 bg-primary-50 rounded-lg border border-primary-200 flex flex-col md:flex-row md:items-center justify-between gap-3">
             {editId === s.id ? (
               <>
-                <input value={editName} onChange={e=>setEditName(e.target.value)} className="border p-2 rounded flex-1 mb-2 md:mb-0"/>
-                <input value={editClub} onChange={e=>setEditClub(e.target.value)} className="border p-2 rounded flex-1 mb-2 md:mb-0"/>
-                <select value={editKlass} onChange={e=>setEditKlass(e.target.value)} className="border p-2 rounded flex-1 mb-2 md:mb-0">
+                <input value={editName} onChange={e=>setEditName(e.target.value)} className="border border-primary-300 p-2 rounded-lg flex-1 mb-2 md:mb-0"/>
+                <input value={editClub} onChange={e=>setEditClub(e.target.value)} className="border border-primary-300 p-2 rounded-lg flex-1 mb-2 md:mb-0"/>
+                <select value={editKlass} onChange={e=>setEditKlass(e.target.value)} className="border border-primary-300 p-2 rounded-lg flex-1 mb-2 md:mb-0">
                   <option>öppen</option>
                   <option>dam</option>
                   <option>veteran</option>
@@ -418,24 +512,24 @@
                   <option>junior med stöd</option>
                 </select>
                 <div className="flex gap-2">
-                  <button onClick={saveEdit} disabled={!user} className={`bg-green-600 text-white px-3 py-1 rounded ${!user?"opacity-40 cursor-not-allowed":""}`}>Spara</button>
-                  <button onClick={cancelEdit} className="bg-gray-300 px-3 py-1 rounded">Avbryt</button>
+                  <button onClick={saveEdit} disabled={!user} className={`bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg font-medium transition-colors ${!user?"opacity-50 cursor-not-allowed":""}`}>Spara</button>
+                  <button onClick={cancelEdit} className="bg-primary-200 hover:bg-primary-300 text-primary-700 px-3 py-2 rounded-lg font-medium transition-colors">Avbryt</button>
                 </div>
               </>
             ) : (
               <>
-                <span className="font-bold text-blue-700">#{s.startNumber}</span>
-                <span className="flex-1">{s.name} <span className="text-gray-500">({s.club})</span></span>
-                <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">{s.klass}</span>
+                <span className="font-semibold text-primary-700 bg-primary-100 px-3 py-1 rounded-full text-sm">#{s.startNumber}</span>
+                <span className="flex-1 font-medium text-primary-800">{s.name} <span className="text-primary-600 font-normal">({s.club})</span></span>
+                <span className="bg-primary-200 text-primary-800 px-3 py-1 rounded-full text-sm font-medium">{s.klass}</span>
                 <div className="flex gap-2">
-                  <button onClick={()=>startEdit(s)} disabled={!user} className={`bg-blue-100 text-blue-700 px-3 py-1 rounded ${!user?"opacity-40 cursor-not-allowed":""}`}>Redigera</button>
-                  <button onClick={()=>removeShooter(s.id)} disabled={!user} className={`bg-red-100 text-red-700 px-3 py-1 rounded ${!user?"opacity-40 cursor-not-allowed":""}`}>Ta bort</button>
+                  <button onClick={()=>startEdit(s)} disabled={!user} className={`bg-primary-100 hover:bg-primary-200 text-primary-700 px-3 py-2 rounded-lg font-medium transition-colors ${!user?"opacity-50 cursor-not-allowed":""}`}>Redigera</button>
+                  <button onClick={()=>removeShooter(s.id)} disabled={!user} className={`bg-red-100 hover:bg-red-200 text-red-700 px-3 py-2 rounded-lg font-medium transition-colors ${!user?"opacity-50 cursor-not-allowed":""}`}>Ta bort</button>
                 </div>
               </>
             )}
-          </li>
+          </div>
         )}
-      </ul>
+      </div>
     </section>
   );
 }
@@ -503,23 +597,26 @@
 
   return (
     <section>
-      <h2 className="text-xl font-bold mb-3 text-blue-700 flex items-center gap-2"><span>📝</span> Registrera poäng</h2>
-      <div className="flex flex-col md:flex-row gap-2 mb-2">
-        <select value={competitionId} onChange={e => setCompetitionId(e.target.value)} className="border p-3 rounded-lg flex-1">
+      <h2 className="text-xl font-semibold mb-6 text-primary-800 flex items-center gap-3">
+        <ClipboardIcon className="w-6 h-6" />
+        Registrera poäng
+      </h2>
+      <div className="flex flex-col md:flex-row gap-4 mb-6">
+        <select value={competitionId} onChange={e => setCompetitionId(e.target.value)} className="border border-primary-300 p-3 rounded-lg flex-1 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors">
           <option value="">Välj tävling</option>
           {competitions.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
         </select>
         <div>
-          <label className="block text-xs text-gray-700 mb-1">Station:</label>
+          <label className="block text-sm font-medium text-primary-700 mb-2">Station:</label>
           <select value={station} onChange={e => setStation(Number(e.target.value))}
-            className="border p-3 rounded-lg w-40 min-w-[120px]">
+            className="border border-primary-300 p-3 rounded-lg w-40 min-w-[120px] focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors">
             {stationOptions.map(num => (
               <option key={num} value={num}>Station {num}</option>
             ))}
           </select>
         </div>
         <div className="flex flex-col flex-1 relative">
-          <label className="block text-xs text-gray-700 mb-1">Sök skytt:</label>
+          <label className="block text-sm font-medium text-primary-700 mb-2">Sök skytt:</label>
           <input
             type="text"
             value={searchShooter}
@@ -528,27 +625,27 @@
               setShooterId("");
             }}
             placeholder="Namn eller startnummer"
-            className="border p-3 rounded-lg mb-1"
+            className="border border-primary-300 p-3 rounded-lg mb-1 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
             autoComplete="off"
           />
           {filteredShooters.length > 0 && (
-            <ul className="absolute z-10 bg-white border rounded-lg shadow max-h-40 overflow-auto w-full">
+            <ul className="absolute z-10 bg-white border border-primary-200 rounded-lg shadow-lg max-h-40 overflow-auto w-full top-full mt-1">
               {filteredShooters.map(s => (
                 <li
                   key={s.id}
-                  className="px-3 py-2 hover:bg-blue-100 cursor-pointer"
+                  className="px-4 py-3 hover:bg-primary-50 cursor-pointer border-b border-primary-100 last:border-b-0"
                   onClick={() => selectShooter(s)}
                 >
-                  #{s.startNumber} {s.name} <span className="text-gray-500">({s.club})</span>
+                  <span className="font-medium text-primary-800">#{s.startNumber} {s.name}</span> <span className="text-primary-600">({s.club})</span>
                 </li>
               ))}
             </ul>
           )}
         </div>
       </div>
-      <div className="flex gap-2 mb-2 justify-center">
+      <div className="flex gap-3 mb-6 justify-center bg-primary-50 p-6 rounded-lg border border-primary-200">
         {shots.map((shot, i) => (
-          <div key={i} className="flex flex-col items-center mx-1">
+          <div key={i} className="flex flex-col items-center">
             <input
               type="number"
               min="0"
@@ -560,9 +657,9 @@
                 setShots(ns);
               }}
               placeholder="0"
-              className="border p-3 rounded-lg w-16 text-center font-semibold text-lg"
+              className="border border-primary-300 p-3 rounded-lg w-16 text-center font-semibold text-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
             />
-            <label className="text-xs mt-1">
+            <label className="text-sm mt-2 text-primary-700 flex items-center gap-1">
               <input
                 type="checkbox"
                 checked={shot.femetta || false}
@@ -571,18 +668,21 @@
                   ns[i].femetta = e.target.checked;
                   setShots(ns);
                 }}
+                className="rounded border-primary-300 text-primary-600 focus:ring-primary-500"
               /> Femetta
             </label>
           </div>
         ))}
       </div>
-      <div className="text-lg font-bold text-blue-700 mb-2">
-        Summa: {shots.reduce((a, b) => a + b.value, 0)} poäng, femettor: {shots.filter(s => s.femetta && s.value === 5).length}
+      <div className="text-lg font-semibold text-primary-800 mb-6 text-center bg-white p-4 rounded-lg border border-primary-200">
+        Summa: <span className="text-primary-700">{shots.reduce((a, b) => a + b.value, 0)} poäng</span>, femettor: <span className="text-primary-700">{shots.filter(s => s.femetta && s.value === 5).length}</span>
       </div>
-      <button onClick={saveScore}
-        className={`bg-blue-500 text-white px-6 py-2 rounded-lg font-bold shadow transition ${!user || !shooterId ? "opacity-40 cursor-not-allowed" : ""}`}
-        disabled={!user || !shooterId}>Spara</button>
-      {!user && <p className="text-red-500 text-sm mt-2">Logga in för att registrera poäng.</p>}
+      <div className="text-center">
+        <button onClick={saveScore}
+          className={`bg-primary-700 hover:bg-primary-800 text-white px-8 py-3 rounded-lg font-medium shadow-sm transition-colors ${!user || !shooterId ? "opacity-50 cursor-not-allowed" : ""}`}
+          disabled={!user || !shooterId}>Spara poäng</button>
+      </div>
+      {!user && <p className="text-red-600 text-sm mt-4 bg-red-50 p-3 rounded-lg border border-red-200 text-center">Logga in för att registrera poäng.</p>}
     </section>
   );
 }
@@ -689,11 +789,11 @@
           valign: "middle"
         },
         headStyles: {
-          fillColor: [23, 37, 84],
+          fillColor: [71, 85, 105],
           textColor: 255,
           fontStyle: "bold"
         },
-        alternateRowStyles: { fillColor: [235, 242, 255] },
+        alternateRowStyles: { fillColor: [248, 250, 252] },
         margin: { left: 10, right: 10 },
         didDrawPage: (data) => {
           doc.setFontSize(13);
@@ -708,62 +808,78 @@
 
   return (
     <section>
-      <h2 className="text-xl font-bold mb-3 text-blue-700 flex items-center gap-2"><span>🏆</span> Resultatlista</h2>
-      <div className="mb-4 flex flex-wrap gap-2 items-center">
-        <label className="mr-2 text-sm font-medium text-blue-700">Välj deltävling:</label>
-        <select
-          value={selectedCompetition}
-          onChange={e => setSelectedCompetition(e.target.value)}
-          className="border p-2 rounded-lg min-w-[160px]"
-        >
-          {competitions.map(c => (
-            <option key={c.id} value={c.id}>{c.name}</option>
-          ))}
-        </select>
-        <span className="ml-4 text-blue-700 text-sm font-semibold">
+      <h2 className="text-xl font-semibold mb-6 text-primary-800 flex items-center gap-3">
+        <TrophyIcon className="w-6 h-6" />
+        Resultatlista
+      </h2>
+      <div className="mb-6 flex flex-wrap gap-4 items-center bg-primary-50 p-4 rounded-lg border border-primary-200">
+        <div className="flex items-center gap-2">
+          <label className="text-sm font-medium text-primary-700">Välj deltävling:</label>
+          <select
+            value={selectedCompetition}
+            onChange={e => setSelectedCompetition(e.target.value)}
+            className="border border-primary-300 p-2 rounded-lg min-w-[180px] focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
+          >
+            {competitions.map(c => (
+              <option key={c.id} value={c.id}>{c.name}</option>
+            ))}
+          </select>
+        </div>
+        <span className="text-primary-700 text-sm font-medium">
           Skiljemål: {skiljemalStationer.map(s => `St ${s}`).join(", ")}
         </span>
-        <button onClick={exportPDF} className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-bold shadow transition ml-auto">Exportera som PDF</button>
+        <button onClick={exportPDF} className="bg-primary-700 hover:bg-primary-800 text-white px-4 py-2 rounded-lg font-medium shadow-sm transition-colors ml-auto">Exportera som PDF</button>
       </div>
       {klassLista.map(klass => (
-        <div key={klass} className="mb-6">
-          <h3 className="text-lg font-bold mb-2 capitalize text-blue-600">{klass}</h3>
+        <div key={klass} className="mb-8">
+          <h3 className="text-lg font-semibold mb-4 capitalize text-primary-800 bg-primary-100 px-3 py-2 rounded-lg">{klass}</h3>
           <div className="overflow-x-auto">
-            <table className="min-w-full border rounded-lg text-sm">
+            <table className="min-w-full border border-primary-200 rounded-lg text-sm bg-white">
               <thead>
-                <tr className="bg-blue-50">
-                  <th className="p-2 text-left">Plats</th>
-                  <th className="p-2 text-left">Skytt</th>
-                  <th className="p-2 text-left">Ort</th>
+                <tr className="bg-primary-100 border-b border-primary-200">
+                  <th className="p-3 text-left font-medium text-primary-800">Plats</th>
+                  <th className="p-3 text-left font-medium text-primary-800">Skytt</th>
+                  <th className="p-3 text-left font-medium text-primary-800">Ort</th>
                   {allStations.map(station => (
-                    <th className="p-2 text-left" key={station}>St {station}</th>
+                    <th className="p-3 text-left font-medium text-primary-800" key={station}>St {station}</th>
                   ))}
                   {skiljemalStationer.map((station, idx) => (
-                    <th className="p-2 text-left" key={"skilje" + station}>Skilje {idx+1}</th>
+                    <th className="p-3 text-left font-medium text-primary-800" key={"skilje" + station}>Skilje {idx+1}</th>
                   ))}
-                  <th className="p-2 text-left">Summa</th>
+                  <th className="p-3 text-left font-medium text-primary-800">Summa</th>
                 </tr>
               </thead>
               <tbody>
                 {(grouped[klass] || []).length === 0 ? (
                   <tr>
-                    <td className="p-2 text-gray-400" colSpan={4 + allStations.length}>Inga deltagare</td>
+                    <td className="p-3 text-primary-500" colSpan={4 + allStations.length}>Inga deltagare</td>
                   </tr>
                 ) : (
                   grouped[klass].map((s, i) => (
-                    <tr key={s.id} className="border-b">
-                      <td className="p-2">{i + 1} {i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : ""}</td>
-                      <td className="p-2 font-semibold">{s.name}</td>
-                      <td className="p-2">{s.club}</td>
+                    <tr key={s.id} className="border-b border-primary-100 hover:bg-primary-50 transition-colors">
+                      <td className="p-3 font-medium">
+                        {i + 1} 
+                        {i === 0 && <span className="ml-2 text-amber-500">
+                          <AwardIcon className="w-4 h-4 inline" />
+                        </span>}
+                        {i === 1 && <span className="ml-2 text-primary-400">
+                          <AwardIcon className="w-4 h-4 inline" />
+                        </span>}
+                        {i === 2 && <span className="ml-2 text-amber-600">
+                          <AwardIcon className="w-4 h-4 inline" />
+                        </span>}
+                      </td>
+                      <td className="p-3 font-medium text-primary-800">{s.name}</td>
+                      <td className="p-3 text-primary-600">{s.club}</td>
                       {allStations.map(station => (
-                        <td className="p-2 font-mono" key={station}>{s.stationTotals[station] || 0}</td>
+                        <td className="p-3 font-mono text-primary-700" key={station}>{s.stationTotals[station] || 0}</td>
                       ))}
                       {skiljemalStationer.map((station, idx) => (
-                        <td className="p-2 font-mono text-blue-700" key={"skilje" + station}>
+                        <td className="p-3 font-mono text-primary-700 font-medium" key={"skilje" + station}>
                           {s.stationFemettors[station] || 0}
                         </td>
                       ))}
-                      <td className="p-2 font-bold text-blue-700">{s.total}</td>
+                      <td className="p-3 font-bold text-primary-800">{s.total}</td>
                     </tr>
                   ))
                 )}
@@ -872,11 +988,11 @@ function CupResults({ shooters, scores, competitions }) {
           valign: "middle"
         },
         headStyles: {
-          fillColor: [180, 137, 0],
+          fillColor: [245, 158, 11],
           textColor: 255,
           fontStyle: "bold"
         },
-        alternateRowStyles: { fillColor: [255, 250, 205] },
+        alternateRowStyles: { fillColor: [254, 252, 232] },
         margin: { left: 10, right: 10 },
         didDrawPage: (data) => {
           doc.setFontSize(13);
@@ -891,41 +1007,55 @@ function CupResults({ shooters, scores, competitions }) {
 
   return (
     <section>
-      <h2 className="text-xl font-bold mb-3 text-yellow-700 flex items-center gap-2"><span>🥇</span> Cupresultat </h2>
-      <div className="mb-4 flex flex-wrap gap-2 items-center">
-        <button onClick={exportPDF} className="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg font-bold shadow transition">Exportera som PDF</button>
+      <h2 className="text-xl font-semibold mb-6 text-primary-800 flex items-center gap-3">
+        <AwardIcon className="w-6 h-6 text-amber-500" />
+        <span>Cupresultat</span>
+      </h2>
+      <div className="mb-6 flex flex-wrap gap-2 items-center">
+        <button onClick={exportPDF} className="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg font-medium shadow-sm transition-colors">Exportera som PDF</button>
       </div>
       {klassLista.map(klass => (
-        <div key={klass} className="mb-6">
-          <h3 className="text-lg font-bold mb-2 capitalize text-yellow-700">{klass}</h3>
+        <div key={klass} className="mb-8">
+          <h3 className="text-lg font-semibold mb-4 capitalize text-primary-800 bg-amber-50 px-3 py-2 rounded-lg border border-amber-200">{klass}</h3>
           <div className="overflow-x-auto">
-            <table className="min-w-full border rounded-lg text-sm">
+            <table className="min-w-full border border-primary-200 rounded-lg text-sm bg-white">
               <thead>
-                <tr className="bg-yellow-50">
-                  <th className="p-2 text-left">Plats</th>
-                  <th className="p-2 text-left">Skytt</th>
-                  <th className="p-2 text-left">Ort</th>
+                <tr className="bg-amber-50 border-b border-amber-200">
+                  <th className="p-3 text-left font-medium text-amber-800">Plats</th>
+                  <th className="p-3 text-left font-medium text-amber-800">Skytt</th>
+                  <th className="p-3 text-left font-medium text-amber-800">Ort</th>
                   {competitionSorted.map(c => (
-                    <th className="p-2 text-left" key={c.id}>{c.name}</th>
+                    <th className="p-3 text-left font-medium text-amber-800" key={c.id}>{c.name}</th>
                   ))}
-                  <th className="p-2 text-left">Summa (5 bästa)</th>
+                  <th className="p-3 text-left font-medium text-amber-800">Summa (5 bästa)</th>
                 </tr>
               </thead>
               <tbody>
                 {(!grouped[klass] || grouped[klass].length === 0) ? (
                   <tr>
-                    <td className="p-2 text-gray-400" colSpan={3 + competitionSorted.length + 1}>Inga deltagare</td>
+                    <td className="p-3 text-primary-500" colSpan={3 + competitionSorted.length + 1}>Inga deltagare</td>
                   </tr>
                 ) : (
                   grouped[klass].map((s, i) => (
-                    <tr key={s.id} className="border-b">
-                      <td className="p-2">{i + 1}</td>
-                      <td className="p-2 font-semibold">{s.name}</td>
-                      <td className="p-2">{s.club}</td>
+                    <tr key={s.id} className="border-b border-primary-100 hover:bg-amber-50 transition-colors">
+                      <td className="p-3 font-medium">
+                        {i + 1}
+                        {i === 0 && <span className="ml-2 text-amber-500">
+                          <AwardIcon className="w-4 h-4 inline" />
+                        </span>}
+                        {i === 1 && <span className="ml-2 text-primary-400">
+                          <AwardIcon className="w-4 h-4 inline" />
+                        </span>}
+                        {i === 2 && <span className="ml-2 text-amber-600">
+                          <AwardIcon className="w-4 h-4 inline" />
+                        </span>}
+                      </td>
+                      <td className="p-3 font-medium text-primary-800">{s.name}</td>
+                      <td className="p-3 text-primary-600">{s.club}</td>
                       {s.placings.map((p, idx) => (
-                        <td className="p-2 font-mono" key={idx}>{p === 1000 ? "-" : p}</td>
+                        <td className="p-3 font-mono text-primary-700" key={idx}>{p === 1000 ? "-" : p}</td>
                       ))}
-                      <td className="p-2 font-bold text-yellow-700">{s.sumPlacings}</td>
+                      <td className="p-3 font-bold text-amber-600">{s.sumPlacings}</td>
                     </tr>
                   ))
                 )}
@@ -934,10 +1064,12 @@ function CupResults({ shooters, scores, competitions }) {
           </div>
         </div>
       ))}
-      <p className="mt-3 text-gray-600 text-sm">
-        Summa = summan av de 5 bästa placeringarna (lägst total vinner, 1000 om ej deltagit).<br />
-        Om en skytt inte deltagit i en deltävling visas "-" och räknas som 1000.
-      </p>
+      <div className="mt-6 p-4 bg-primary-50 rounded-lg border border-primary-200">
+        <p className="text-primary-700 text-sm">
+          <strong>Summa</strong> = summan av de 5 bästa placeringarna (lägst total vinner, 1000 om ej deltagit).<br />
+          Om en skytt inte deltagit i en deltävling visas "-" och räknas som 1000.
+        </p>
+      </div>
     </section>
   );
 }
