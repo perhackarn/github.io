@@ -764,26 +764,10 @@ function Results({ shooters, scores, competitions }) {
   );
 }
     // --- CupResults ---
-    function CupResults({ shooters, scores, competitions }) {
+   function CupResults({ shooters, scores, competitions }) {
   const klassLista = ["öppen", "dam", "veteran", "ungdom", "junior med stöd"];
-
-  // Skiljemålsstationer, default [1,2,3]
-  const [skiljemalStationer, setSkiljemalStationer] = React.useState([1,2,3]);
-  // Hämta alla stationer som finns i cupen
-  const allStations = Array.from(
-    new Set(scores.map(sc => sc.station))
-  ).sort((a, b) => a - b);
-
-  function toggleStation(station) {
-    setSkiljemalStationer(prev => {
-      if (prev.includes(station)) {
-        return prev.filter(s => s !== station);
-      } else {
-        if (prev.length >= 3) return prev;
-        return [...prev, station];
-      }
-    });
-  }
+  const skiljemalStationer = [1,2,3]; // Fast värde
+  const allStations = Array.from(new Set(scores.map(sc => sc.station))).sort((a, b) => a - b);
 
   // Steg 1: Placeringar per deltävling, per klass
   const placementsPerCompetition = {};
@@ -881,21 +865,6 @@ function Results({ shooters, scores, competitions }) {
       <h2 className="text-xl font-bold mb-3 text-yellow-700 flex items-center gap-2"><span>🥇</span> Cupresultat </h2>
       <div className="mb-4 flex flex-wrap gap-2 items-center">
         <button onClick={exportPDF} className="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg font-bold shadow transition">Exportera som PDF</button>
-      </div>
-      <div className="flex gap-2 mb-4 items-center">
-        <span className="font-semibold text-yellow-700">Skiljemål:</span>
-        {allStations.map(station => (
-          <label key={station} className="flex items-center gap-1">
-            <input
-              type="checkbox"
-              checked={skiljemalStationer.includes(station)}
-              onChange={() => toggleStation(station)}
-              disabled={!skiljemalStationer.includes(station) && skiljemalStationer.length >= 3}
-            />
-            <span>Station {station}</span>
-          </label>
-        ))}
-        <span className="text-xs text-gray-500 ml-2">(max 3 st)</span>
       </div>
       {klassLista.map(klass => (
         <div key={klass} className="mb-6">
