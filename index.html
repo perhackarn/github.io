@@ -197,391 +197,761 @@
       );
     }
 
-    // --- Competitions (deltävlingar) med val av skiljemål ---
+    // --- Competitions ---
     function Competitions({ competitions, user }) {
-      const [name, setName] = React.useState("");
-      const [date, setDate] = React.useState("");
-      const [skiljemal, setSkiljemal] = React.useState([]);
-      const [editId, setEditId] = React.useState(null);
-      const [editName, setEditName] = React.useState("");
-      const [editDate, setEditDate] = React.useState("");
-      const [editSkiljemal, setEditSkiljemal] = React.useState([]);
+  const [name, setName] = React.useState("");
+  const [date, setDate] = React.useState("");
+  const [skiljemal, setSkiljemal] = React.useState([]);
+  const [editId, setEditId] = React.useState(null);
+  const [editName, setEditName] = React.useState("");
+  const [editDate, setEditDate] = React.useState("");
+  const [editSkiljemal, setEditSkiljemal] = React.useState([]);
 
-      const stationer = [1, 2, 3, 4, 5, 6, 7];
+  const stationer = [1, 2, 3, 4, 5, 6, 7];
 
-      function toggleSkiljemal(station) {
-        setSkiljemal(prev =>
-          prev.includes(station)
-            ? prev.filter(s => s !== station)
-            : prev.length < 3 ? [...prev, station] : prev
-        );
-      }
+  function toggleSkiljemal(station) {
+    setSkiljemal(prev =>
+      prev.includes(station)
+        ? prev.filter(s => s !== station)
+        : prev.length < 3 ? [...prev, station] : prev
+    );
+  }
 
-      function toggleEditSkiljemal(station) {
-        setEditSkiljemal(prev =>
-          prev.includes(station)
-            ? prev.filter(s => s !== station)
-            : prev.length < 3 ? [...prev, station] : prev
-        );
-      }
+  function toggleEditSkiljemal(station) {
+    setEditSkiljemal(prev =>
+      prev.includes(station)
+        ? prev.filter(s => s !== station)
+        : prev.length < 3 ? [...prev, station] : prev
+    );
+  }
 
-      const addCompetition = async () => {
-        if (!user) return alert("Du måste vara inloggad!");
-        if (!name || !date || skiljemal.length === 0) return alert("Fyll i namn, datum och minst 1 skiljemålsstation!");
-        await addDoc(collection(db, "competitions"), { name, date, skiljemal });
-        setName(""); setDate(""); setSkiljemal([]);
-      };
+  const addCompetition = async () => {
+    if (!user) return alert("Du måste vara inloggad!");
+    if (!name || !date || skiljemal.length === 0) return alert("Fyll i namn, datum och minst 1 skiljemålsstation!");
+    await addDoc(collection(db, "competitions"), { name, date, skiljemal });
+    setName(""); setDate(""); setSkiljemal([]);
+  };
 
-      const startEdit = (c) => {
-        setEditId(c.id);
-        setEditName(c.name);
-        setEditDate(c.date);
-        setEditSkiljemal(c.skiljemal || []);
-      };
+  const startEdit = (c) => {
+    setEditId(c.id);
+    setEditName(c.name);
+    setEditDate(c.date);
+    setEditSkiljemal(c.skiljemal || []);
+  };
 
-      const saveEdit = async () => {
-        if (!user) return alert("Du måste vara inloggad!");
-        if (!editName || !editDate || editSkiljemal.length === 0) return alert("Fyll i namn, datum och minst 1 skiljemålsstation!");
-        await updateDoc(doc(db, "competitions", editId), { name: editName, date: editDate, skiljemal: editSkiljemal });
-        setEditId(null); setEditName(""); setEditDate(""); setEditSkiljemal([]);
-      };
+  const saveEdit = async () => {
+    if (!user) return alert("Du måste vara inloggad!");
+    if (!editName || !editDate || editSkiljemal.length === 0) return alert("Fyll i namn, datum och minst 1 skiljemålsstation!");
+    await updateDoc(doc(db, "competitions", editId), { name: editName, date: editDate, skiljemal: editSkiljemal });
+    setEditId(null); setEditName(""); setEditDate(""); setEditSkiljemal([]);
+  };
 
-      const cancelEdit = () => {
-        setEditId(null); setEditName(""); setEditDate(""); setEditSkiljemal([]);
-      };
+  const cancelEdit = () => {
+    setEditId(null); setEditName(""); setEditDate(""); setEditSkiljemal([]);
+  };
 
-      const removeCompetition = async (id) => {
-        if (!user) return alert("Du måste vara inloggad!");
-        if (!window.confirm("Ta bort deltävlingen?")) return;
-        await deleteDoc(doc(db, "competitions", id));
-      };
+  const removeCompetition = async (id) => {
+    if (!user) return alert("Du måste vara inloggad!");
+    if (!window.confirm("Ta bort deltävlingen?")) return;
+    await deleteDoc(doc(db, "competitions", id));
+  };
 
-      return (
-        <section>
-          <h2 className="text-xl font-bold mb-3 text-blue-700 flex items-center gap-2"><span>📅</span> Deltävlingar</h2>
-          <div className="flex flex-col md:flex-row gap-2 mb-4">
-            <input value={name} onChange={e=>setName(e.target.value)} placeholder="Namn"
-              className="border p-3 rounded-lg flex-1 focus:ring-blue-400 focus:ring-2" />
-            <input type="date" value={date} onChange={e=>setDate(e.target.value)}
-              className="border p-3 rounded-lg focus:ring-blue-400 focus:ring-2" />
-            <div className="flex gap-2 items-center mb-2">
-              <span className="font-semibold text-blue-700">Skiljemål:</span>
-              {stationer.map(station => (
-                <label key={station} className="flex items-center gap-1">
-                  <input
-                    type="checkbox"
-                    checked={skiljemal.includes(station)}
-                    onChange={() => toggleSkiljemal(station)}
-                    disabled={!skiljemal.includes(station) && skiljemal.length >= 3}
-                  />
-                  <span>St {station}</span>
-                </label>
-              ))}
-              <span className="text-xs text-gray-500 ml-2">(max 3 st)</span>
-            </div>
-            <button onClick={addCompetition}
-              className={`bg-green-500 text-white px-4 py-2 rounded-lg font-semibold transition shadow ${!user ? "opacity-40 cursor-not-allowed" : ""}`}
-              disabled={!user}>Lägg till</button>
-          </div>
-          {!user && <p className="text-red-500 text-sm mb-2">Logga in för att lägga till/ändra/tar bort deltävlingar.</p>}
-          <ul className="divide-y">
-            {competitions.map(c=>
-              <li key={c.id} className="py-3 flex flex-col md:flex-row md:items-center justify-between gap-2">
-                {editId === c.id ? (
-                  <>
-                    <input value={editName} onChange={e=>setEditName(e.target.value)} className="border p-2 rounded flex-1 mb-2 md:mb-0"/>
-                    <input type="date" value={editDate} onChange={e=>setEditDate(e.target.value)} className="border p-2 rounded flex-1 mb-2 md:mb-0"/>
-                    <div className="flex gap-2 items-center mb-2">
-                      <span className="font-semibold text-blue-700">Skiljemål:</span>
-                      {stationer.map(station => (
-                        <label key={station} className="flex items-center gap-1">
-                          <input
-                            type="checkbox"
-                            checked={editSkiljemal.includes(station)}
-                            onChange={() => toggleEditSkiljemal(station)}
-                            disabled={!editSkiljemal.includes(station) && editSkiljemal.length >= 3}
-                          />
-                          <span>St {station}</span>
-                        </label>
-                      ))}
-                      <span className="text-xs text-gray-500 ml-2">(max 3 st)</span>
-                    </div>
-                    <div className="flex gap-2">
-                      <button onClick={saveEdit} disabled={!user} className={`bg-green-600 text-white px-3 py-1 rounded ${!user?"opacity-40 cursor-not-allowed":""}`}>Spara</button>
-                      <button onClick={cancelEdit} className="bg-gray-300 px-3 py-1 rounded">Avbryt</button>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <span className="font-medium flex-1">{c.name}</span>
-                    <span className="text-gray-500 flex-1">{c.date}</span>
-                    <span className="flex-1 text-blue-700 text-xs">
-                      Skiljemål: {c.skiljemal ? c.skiljemal.map(s => `St ${s}`).join(", ") : "–"}
-                    </span>
-                    <div className="flex gap-2">
-                      <button onClick={()=>startEdit(c)} disabled={!user} className={`bg-blue-100 text-blue-700 px-3 py-1 rounded ${!user?"opacity-40 cursor-not-allowed":""}`}>Redigera</button>
-                      <button onClick={()=>removeCompetition(c.id)} disabled={!user} className={`bg-red-100 text-red-700 px-3 py-1 rounded ${!user?"opacity-40 cursor-not-allowed":""}`}>Ta bort</button>
-                    </div>
-                  </>
-                )}
-              </li>
+  return (
+    <section>
+      <h2 className="text-xl font-bold mb-3 text-blue-700 flex items-center gap-2"><span>📅</span> Deltävlingar</h2>
+      <div className="flex flex-col md:flex-row gap-2 mb-4">
+        <input value={name} onChange={e=>setName(e.target.value)} placeholder="Namn"
+          className="border p-3 rounded-lg flex-1 focus:ring-blue-400 focus:ring-2" />
+        <input type="date" value={date} onChange={e=>setDate(e.target.value)}
+          className="border p-3 rounded-lg focus:ring-blue-400 focus:ring-2" />
+        <div className="flex gap-2 items-center mb-2">
+          <span className="font-semibold text-blue-700">Skiljemål:</span>
+          {stationer.map(station => (
+            <label key={station} className="flex items-center gap-1">
+              <input
+                type="checkbox"
+                checked={skiljemal.includes(station)}
+                onChange={() => toggleSkiljemal(station)}
+                disabled={!skiljemal.includes(station) && skiljemal.length >= 3}
+              />
+              <span>St {station}</span>
+            </label>
+          ))}
+          <span className="text-xs text-gray-500 ml-2">(max 3 st)</span>
+        </div>
+        <button onClick={addCompetition}
+          className={`bg-green-500 text-white px-4 py-2 rounded-lg font-semibold transition shadow ${!user ? "opacity-40 cursor-not-allowed" : ""}`}
+          disabled={!user}>Lägg till</button>
+      </div>
+      {!user && <p className="text-red-500 text-sm mb-2">Logga in för att lägga till/ändra/tar bort deltävlingar.</p>}
+      <ul className="divide-y">
+        {competitions.map(c=>
+          <li key={c.id} className="py-3 flex flex-col md:flex-row md:items-center justify-between gap-2">
+            {editId === c.id ? (
+              <>
+                <input value={editName} onChange={e=>setEditName(e.target.value)} className="border p-2 rounded flex-1 mb-2 md:mb-0"/>
+                <input type="date" value={editDate} onChange={e=>setEditDate(e.target.value)} className="border p-2 rounded flex-1 mb-2 md:mb-0"/>
+                <div className="flex gap-2 items-center mb-2">
+                  <span className="font-semibold text-blue-700">Skiljemål:</span>
+                  {stationer.map(station => (
+                    <label key={station} className="flex items-center gap-1">
+                      <input
+                        type="checkbox"
+                        checked={editSkiljemal.includes(station)}
+                        onChange={() => toggleEditSkiljemal(station)}
+                        disabled={!editSkiljemal.includes(station) && editSkiljemal.length >= 3}
+                      />
+                      <span>St {station}</span>
+                    </label>
+                  ))}
+                  <span className="text-xs text-gray-500 ml-2">(max 3 st)</span>
+                </div>
+                <div className="flex gap-2">
+                  <button onClick={saveEdit} disabled={!user} className={`bg-green-600 text-white px-3 py-1 rounded ${!user?"opacity-40 cursor-not-allowed":""}`}>Spara</button>
+                  <button onClick={cancelEdit} className="bg-gray-300 px-3 py-1 rounded">Avbryt</button>
+                </div>
+              </>
+            ) : (
+              <>
+                <span className="font-medium flex-1">{c.name}</span>
+                <span className="text-gray-500 flex-1">{c.date}</span>
+                <span className="flex-1 text-blue-700 text-xs">
+                  Skiljemål: {c.skiljemal ? c.skiljemal.map(s => `St ${s}`).join(", ") : "–"}
+                </span>
+                <div className="flex gap-2">
+                  <button onClick={()=>startEdit(c)} disabled={!user} className={`bg-blue-100 text-blue-700 px-3 py-1 rounded ${!user?"opacity-40 cursor-not-allowed":""}`}>Redigera</button>
+                  <button onClick={()=>removeCompetition(c.id)} disabled={!user} className={`bg-red-100 text-red-700 px-3 py-1 rounded ${!user?"opacity-40 cursor-not-allowed":""}`}>Ta bort</button>
+                </div>
+              </>
             )}
-          </ul>
-        </section>
-      );
-    }
+          </li>
+        )}
+      </ul>
+    </section>
+  );
+}
 
     // --- Shooters ---
     function Shooters({ shooters, user }) {
-      const [search, setSearch] = React.useState("");
-      const filteredShooters = shooters.filter(s =>
-        s.name.toLowerCase().includes(search.toLowerCase()) ||
-        s.club.toLowerCase().includes(search.toLowerCase()) ||
-        String(s.startNumber).includes(search)
-      );
+  const [search, setSearch] = React.useState("");
+  const filteredShooters = shooters.filter(s =>
+    s.name.toLowerCase().includes(search.toLowerCase()) ||
+    s.club.toLowerCase().includes(search.toLowerCase()) ||
+    String(s.startNumber).includes(search)
+  );
 
-      const [name, setName] = React.useState("");
-      const [club, setClub] = React.useState("");
-      const [klass, setKlass] = React.useState("öppen");
+  const [name, setName] = React.useState("");
+  const [club, setClub] = React.useState("");
+  const [klass, setKlass] = React.useState("öppen");
 
-      const [editId, setEditId] = React.useState(null);
-      const [editName, setEditName] = React.useState("");
-      const [editClub, setEditClub] = React.useState("");
-      const [editKlass, setEditKlass] = React.useState("öppen");
+  const [editId, setEditId] = React.useState(null);
+  const [editName, setEditName] = React.useState("");
+  const [editClub, setEditClub] = React.useState("");
+  const [editKlass, setEditKlass] = React.useState("öppen");
 
-      const addShooter = async () => {
-        if (!user) return alert("Du måste vara inloggad!");
-        if (!name || !club) return;
-        const startNumber = shooters.length+1;
-        await addDoc(collection(db, "shooters"), { name, club, klass, startNumber });
-        setName(""); setClub("");
-      };
+  const addShooter = async () => {
+    if (!user) return alert("Du måste vara inloggad!");
+    if (!name || !club) return;
+    const startNumber = shooters.length + 1;
+    await addDoc(collection(db, "shooters"), { name, club, klass, startNumber });
+    setName(""); setClub("");
+  };
 
-      const startEdit = (s) => {
-        setEditId(s.id);
-        setEditName(s.name);
-        setEditClub(s.club);
-        setEditKlass(s.klass);
-      };
+  const startEdit = (s) => {
+    setEditId(s.id);
+    setEditName(s.name);
+    setEditClub(s.club);
+    setEditKlass(s.klass);
+  };
 
-      const saveEdit = async () => {
-        if (!user) return alert("Du måste vara inloggad!");
-        if (!editName || !editClub) return;
-        await updateDoc(doc(db, "shooters", editId), { name: editName, club: editClub, klass: editKlass });
-        setEditId(null); setEditName(""); setEditClub(""); setEditKlass("öppen");
-      };
+  const saveEdit = async () => {
+    if (!user) return alert("Du måste vara inloggad!");
+    if (!editName || !editClub) return;
+    await updateDoc(doc(db, "shooters", editId), { name: editName, club: editClub, klass: editKlass });
+    setEditId(null); setEditName(""); setEditClub(""); setEditKlass("öppen");
+  };
 
-      const cancelEdit = () => {
-        setEditId(null); setEditName(""); setEditClub(""); setEditKlass("öppen");
-      };
+  const cancelEdit = () => {
+    setEditId(null); setEditName(""); setEditClub(""); setEditKlass("öppen");
+  };
 
-      const removeShooter = async (id) => {
-        if (!user) return alert("Du måste vara inloggad!");
-        if (!window.confirm("Ta bort skytten?")) return;
-        await deleteDoc(doc(db, "shooters", id));
-      };
+  const removeShooter = async (id) => {
+    if (!user) return alert("Du måste vara inloggad!");
+    if (!window.confirm("Ta bort skytten?")) return;
+    await deleteDoc(doc(db, "shooters", id));
+  };
 
-      return (
-        <section>
-          <h2 className="text-xl font-bold mb-3 text-blue-700 flex items-center gap-2"><span>🎯</span> Skyttar</h2>
-          <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Sök skytt, ort eller startnummer..."
-            className="border p-3 rounded-lg w-full mb-4 focus:ring-blue-400 focus:ring-2"/>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-2 mb-4">
-            <input value={name} onChange={e=>setName(e.target.value)} placeholder="Namn"
-              className="border p-3 rounded-lg focus:ring-blue-400 focus:ring-2"/>
-            <input value={club} onChange={e=>setClub(e.target.value)} placeholder="Ort"
-              className="border p-3 rounded-lg focus:ring-blue-400 focus:ring-2"/>
-            <select value={klass} onChange={e=>setKlass(e.target.value)} className="border p-3 rounded-lg">
-              <option>öppen</option><option>dam</option><option>veteran</option><option>ungdom</option><option>junior med stöd</option>
-            </select>
-            <button onClick={addShooter}
-              className={`bg-green-500 text-white px-4 py-2 rounded-lg font-semibold transition shadow ${!user ? "opacity-40 cursor-not-allowed" : ""}`}
-              disabled={!user}>Lägg till</button>
-          </div>
-          {!user && <p className="text-red-500 text-sm mb-2">Logga in för att lägga till/ändra/tar bort skyttar.</p>}
-          <ul className="divide-y">
-            {filteredShooters.map(s=>
-              <li key={s.id} className="py-3 flex flex-col md:flex-row md:items-center justify-between gap-2">
-                {editId === s.id ? (
-                  <>
-                    <input value={editName} onChange={e=>setEditName(e.target.value)} className="border p-2 rounded flex-1 mb-2 md:mb-0"/>
-                    <input value={editClub} onChange={e=>setEditClub(e.target.value)} className="border p-2 rounded flex-1 mb-2 md:mb-0"/>
-                    <select value={editKlass} onChange={e=>setEditKlass(e.target.value)} className="border p-2 rounded flex-1 mb-2 md:mb-0">
-                      <option>öppen</option><option>dam</option><option>veteran</option><option>ungdom</option><option>junior med stöd</option>
-                    </select>
-                    <div className="flex gap-2">
-                      <button onClick={saveEdit} disabled={!user} className={`bg-green-600 text-white px-3 py-1 rounded ${!user?"opacity-40 cursor-not-allowed":""}`}>Spara</button>
-                      <button onClick={cancelEdit} className="bg-gray-300 px-3 py-1 rounded">Avbryt</button>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <span className="font-bold text-blue-700">#{s.startNumber}</span>
-                    <span className="flex-1">{s.name} <span className="text-gray-500">({s.club})</span></span>
-                    <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">{s.klass}</span>
-                    <div className="flex gap-2">
-                      <button onClick={()=>startEdit(s)} disabled={!user} className={`bg-blue-100 text-blue-700 px-3 py-1 rounded ${!user?"opacity-40 cursor-not-allowed":""}`}>Redigera</button>
-                      <button onClick={()=>removeShooter(s.id)} disabled={!user} className={`bg-red-100 text-red-700 px-3 py-1 rounded ${!user?"opacity-40 cursor-not-allowed":""}`}>Ta bort</button>
-                    </div>
-                  </>
-                )}
-              </li>
+  return (
+    <section>
+      <h2 className="text-xl font-bold mb-3 text-blue-700 flex items-center gap-2"><span>🎯</span> Skyttar</h2>
+      <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Sök skytt, ort eller startnummer..."
+        className="border p-3 rounded-lg w-full mb-4 focus:ring-blue-400 focus:ring-2"/>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-2 mb-4">
+        <input value={name} onChange={e=>setName(e.target.value)} placeholder="Namn"
+          className="border p-3 rounded-lg focus:ring-blue-400 focus:ring-2"/>
+        <input value={club} onChange={e=>setClub(e.target.value)} placeholder="Ort"
+          className="border p-3 rounded-lg focus:ring-blue-400 focus:ring-2"/>
+        <select value={klass} onChange={e=>setKlass(e.target.value)} className="border p-3 rounded-lg">
+          <option>öppen</option>
+          <option>dam</option>
+          <option>veteran</option>
+          <option>ungdom</option>
+          <option>junior med stöd</option>
+        </select>
+        <button onClick={addShooter}
+          className={`bg-green-500 text-white px-4 py-2 rounded-lg font-semibold transition shadow ${!user ? "opacity-40 cursor-not-allowed" : ""}`}
+          disabled={!user}>Lägg till</button>
+      </div>
+      {!user && <p className="text-red-500 text-sm mb-2">Logga in för att lägga till/ändra/tar bort skyttar.</p>}
+      <ul className="divide-y">
+        {filteredShooters.map(s=>
+          <li key={s.id} className="py-3 flex flex-col md:flex-row md:items-center justify-between gap-2">
+            {editId === s.id ? (
+              <>
+                <input value={editName} onChange={e=>setEditName(e.target.value)} className="border p-2 rounded flex-1 mb-2 md:mb-0"/>
+                <input value={editClub} onChange={e=>setEditClub(e.target.value)} className="border p-2 rounded flex-1 mb-2 md:mb-0"/>
+                <select value={editKlass} onChange={e=>setEditKlass(e.target.value)} className="border p-2 rounded flex-1 mb-2 md:mb-0">
+                  <option>öppen</option>
+                  <option>dam</option>
+                  <option>veteran</option>
+                  <option>ungdom</option>
+                  <option>junior med stöd</option>
+                </select>
+                <div className="flex gap-2">
+                  <button onClick={saveEdit} disabled={!user} className={`bg-green-600 text-white px-3 py-1 rounded ${!user?"opacity-40 cursor-not-allowed":""}`}>Spara</button>
+                  <button onClick={cancelEdit} className="bg-gray-300 px-3 py-1 rounded">Avbryt</button>
+                </div>
+              </>
+            ) : (
+              <>
+                <span className="font-bold text-blue-700">#{s.startNumber}</span>
+                <span className="flex-1">{s.name} <span className="text-gray-500">({s.club})</span></span>
+                <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">{s.klass}</span>
+                <div className="flex gap-2">
+                  <button onClick={()=>startEdit(s)} disabled={!user} className={`bg-blue-100 text-blue-700 px-3 py-1 rounded ${!user?"opacity-40 cursor-not-allowed":""}`}>Redigera</button>
+                  <button onClick={()=>removeShooter(s.id)} disabled={!user} className={`bg-red-100 text-red-700 px-3 py-1 rounded ${!user?"opacity-40 cursor-not-allowed":""}`}>Ta bort</button>
+                </div>
+              </>
             )}
-          </ul>
-        </section>
-      );
-    }
+          </li>
+        )}
+      </ul>
+    </section>
+  );
+}
 
     // --- Scores ---
     function Scores({ shooters, competitions, user }) {
-      const [competitionId, setCompetitionId] = React.useState("");
-      const [station, setStation] = React.useState(1);
-      const [searchShooter, setSearchShooter] = React.useState("");
-      const [filteredShooters, setFilteredShooters] = React.useState([]);
-      const [shooterId, setShooterId] = React.useState("");
-      const [shots, setShots] = React.useState([
-        { value: 0, femetta: false },
-        { value: 0, femetta: false },
-        { value: 0, femetta: false },
-        { value: 0, femetta: false },
-        { value: 0, femetta: false }
-      ]);
+  const [competitionId, setCompetitionId] = React.useState("");
+  const [station, setStation] = React.useState(1);
+  const [searchShooter, setSearchShooter] = React.useState("");
+  const [filteredShooters, setFilteredShooters] = React.useState([]);
+  const [shooterId, setShooterId] = React.useState("");
+  const [shots, setShots] = React.useState([
+    { value: 0, femetta: false },
+    { value: 0, femetta: false },
+    { value: 0, femetta: false },
+    { value: 0, femetta: false },
+    { value: 0, femetta: false }
+  ]);
 
-      React.useEffect(() => {
-        if (searchShooter === "") {
-          setFilteredShooters([]);
-        } else {
-          const search = searchShooter.toLowerCase();
-          setFilteredShooters(
-            shooters.filter(s =>
-              s.name.toLowerCase().includes(search) ||
-              String(s.startNumber).includes(search)
-            )
-          );
-        }
-      }, [searchShooter, shooters]);
-
-      const selectShooter = (s) => {
-        setShooterId(s.id);
-        setSearchShooter(`#${s.startNumber} ${s.name}`);
-        setFilteredShooters([]);
-      };
-
-      const saveScore = async () => {
-        if (!user) return alert("Du måste vara inloggad!");
-        if (!competitionId || !shooterId) return;
-        const total = shots.reduce((a, b) => a + b.value, 0);
-        const femettor = shots.filter(s => s.femetta && s.value === 5).length;
-        await addDoc(collection(db, "scores"), {
-          competitionId,
-          shooterId,
-          station,
-          shots,
-          total,
-          femettor
-        });
-        setShots([
-          { value: 0, femetta: false },
-          { value: 0, femetta: false },
-          { value: 0, femetta: false },
-          { value: 0, femetta: false },
-          { value: 0, femetta: false }
-        ]);
-        setShooterId("");
-        setSearchShooter("");
-      };
-
-      const stationOptions = Array.from({ length: 7 }, (_, i) => i + 1);
-
-      return (
-        <section>
-          <h2 className="text-xl font-bold mb-3 text-blue-700 flex items-center gap-2"><span>📝</span> Registrera poäng</h2>
-          <div className="flex flex-col md:flex-row gap-2 mb-2">
-            <select value={competitionId} onChange={e => setCompetitionId(e.target.value)} className="border p-3 rounded-lg flex-1">
-              <option value="">Välj tävling</option>
-              {competitions.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-            </select>
-            <div>
-              <label className="block text-xs text-gray-700 mb-1">Station:</label>
-              <select value={station} onChange={e => setStation(Number(e.target.value))}
-                className="border p-3 rounded-lg w-40 min-w-[120px]">
-                {stationOptions.map(num => (
-                  <option key={num} value={num}>Station {num}</option>
-                ))}
-              </select>
-            </div>
-            <div className="flex flex-col flex-1 relative">
-              <label className="block text-xs text-gray-700 mb-1">Sök skytt:</label>
-              <input
-                type="text"
-                value={searchShooter}
-                onChange={e => {
-                  setSearchShooter(e.target.value);
-                  setShooterId("");
-                }}
-                placeholder="Namn eller startnummer"
-                className="border p-3 rounded-lg mb-1"
-                autoComplete="off"
-              />
-              {filteredShooters.length > 0 && (
-                <ul className="absolute z-10 bg-white border rounded-lg shadow max-h-40 overflow-auto w-full">
-                  {filteredShooters.map(s => (
-                    <li
-                      key={s.id}
-                      className="px-3 py-2 hover:bg-blue-100 cursor-pointer"
-                      onClick={() => selectShooter(s)}
-                    >
-                      #{s.startNumber} {s.name} <span className="text-gray-500">({s.club})</span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          </div>
-          <div className="flex gap-2 mb-2 justify-center">
-            {shots.map((shot, i) => (
-              <div key={i} className="flex flex-col items-center mx-1">
-                <input
-                  type="number"
-                  min="0"
-                  max="10"
-                  value={shot.value === 0 ? "" : shot.value}
-                  onChange={e => {
-                    const ns = [...shots];
-                    ns[i].value = e.target.value === "" ? 0 : Number(e.target.value);
-                    setShots(ns);
-                  }}
-                  placeholder="0"
-                  className="border p-3 rounded-lg w-16 text-center font-semibold text-lg"
-                />
-                <label className="text-xs mt-1">
-                  <input
-                    type="checkbox"
-                    checked={shot.femetta || false}
-                    onChange={e => {
-                      const ns = [...shots];
-                      ns[i].femetta = e.target.checked;
-                      setShots(ns);
-                    }}
-                  /> Femetta
-                </label>
-              </div>
-            ))}
-          </div>
-          <div className="text-lg font-bold text-blue-700 mb-2">
-            Summa: {shots.reduce((a, b) => a + b.value, 0)} poäng, femettor: {shots.filter(s => s.femetta && s.value === 5).length}
-          </div>
-          <button onClick={saveScore}
-            className={`bg-blue-500 text-white px-6 py-2 rounded-lg font-bold shadow transition ${!user || !shooterId ? "opacity-40 cursor-not-allowed" : ""}`}
-            disabled={!user || !shooterId}>Spara</button>
-          {!user && <p className="text-red-500 text-sm mt-2">Logga in för att registrera poäng.</p>}
-        </section>
+  React.useEffect(() => {
+    if (searchShooter === "") {
+      setFilteredShooters([]);
+    } else {
+      const search = searchShooter.toLowerCase();
+      setFilteredShooters(
+        shooters.filter(s =>
+          s.name.toLowerCase().includes(search) ||
+          String(s.startNumber).includes(search)
+        )
       );
     }
+  }, [searchShooter, shooters]);
 
-    // --- Results --- [Samma kod som tidigare, med PDF-export och tabell...]
+  const selectShooter = (s) => {
+    setShooterId(s.id);
+    setSearchShooter(`#${s.startNumber} ${s.name}`);
+    setFilteredShooters([]);
+  };
 
-    // --- CupResults --- [Samma kod som tidigare, med PDF-export och tabell...]
+  const saveScore = async () => {
+    if (!user) return alert("Du måste vara inloggad!");
+    if (!competitionId || !shooterId) return;
+    const total = shots.reduce((a, b) => a + b.value, 0);
+    const femettor = shots.filter(s => s.femetta && s.value === 5).length;
+    await addDoc(collection(db, "scores"), {
+      competitionId,
+      shooterId,
+      station,
+      shots,
+      total,
+      femettor
+    });
+    setShots([
+      { value: 0, femetta: false },
+      { value: 0, femetta: false },
+      { value: 0, femetta: false },
+      { value: 0, femetta: false },
+      { value: 0, femetta: false }
+    ]);
+    setShooterId("");
+    setSearchShooter("");
+  };
+
+  const stationOptions = Array.from({ length: 7 }, (_, i) => i + 1);
+
+  return (
+    <section>
+      <h2 className="text-xl font-bold mb-3 text-blue-700 flex items-center gap-2"><span>📝</span> Registrera poäng</h2>
+      <div className="flex flex-col md:flex-row gap-2 mb-2">
+        <select value={competitionId} onChange={e => setCompetitionId(e.target.value)} className="border p-3 rounded-lg flex-1">
+          <option value="">Välj tävling</option>
+          {competitions.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+        </select>
+        <div>
+          <label className="block text-xs text-gray-700 mb-1">Station:</label>
+          <select value={station} onChange={e => setStation(Number(e.target.value))}
+            className="border p-3 rounded-lg w-40 min-w-[120px]">
+            {stationOptions.map(num => (
+              <option key={num} value={num}>Station {num}</option>
+            ))}
+          </select>
+        </div>
+        <div className="flex flex-col flex-1 relative">
+          <label className="block text-xs text-gray-700 mb-1">Sök skytt:</label>
+          <input
+            type="text"
+            value={searchShooter}
+            onChange={e => {
+              setSearchShooter(e.target.value);
+              setShooterId("");
+            }}
+            placeholder="Namn eller startnummer"
+            className="border p-3 rounded-lg mb-1"
+            autoComplete="off"
+          />
+          {filteredShooters.length > 0 && (
+            <ul className="absolute z-10 bg-white border rounded-lg shadow max-h-40 overflow-auto w-full">
+              {filteredShooters.map(s => (
+                <li
+                  key={s.id}
+                  className="px-3 py-2 hover:bg-blue-100 cursor-pointer"
+                  onClick={() => selectShooter(s)}
+                >
+                  #{s.startNumber} {s.name} <span className="text-gray-500">({s.club})</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </div>
+      <div className="flex gap-2 mb-2 justify-center">
+        {shots.map((shot, i) => (
+          <div key={i} className="flex flex-col items-center mx-1">
+            <input
+              type="number"
+              min="0"
+              max="10"
+              value={shot.value === 0 ? "" : shot.value}
+              onChange={e => {
+                const ns = [...shots];
+                ns[i].value = e.target.value === "" ? 0 : Number(e.target.value);
+                setShots(ns);
+              }}
+              placeholder="0"
+              className="border p-3 rounded-lg w-16 text-center font-semibold text-lg"
+            />
+            <label className="text-xs mt-1">
+              <input
+                type="checkbox"
+                checked={shot.femetta || false}
+                onChange={e => {
+                  const ns = [...shots];
+                  ns[i].femetta = e.target.checked;
+                  setShots(ns);
+                }}
+              /> Femetta
+            </label>
+          </div>
+        ))}
+      </div>
+      <div className="text-lg font-bold text-blue-700 mb-2">
+        Summa: {shots.reduce((a, b) => a + b.value, 0)} poäng, femettor: {shots.filter(s => s.femetta && s.value === 5).length}
+      </div>
+      <button onClick={saveScore}
+        className={`bg-blue-500 text-white px-6 py-2 rounded-lg font-bold shadow transition ${!user || !shooterId ? "opacity-40 cursor-not-allowed" : ""}`}
+        disabled={!user || !shooterId}>Spara</button>
+      {!user && <p className="text-red-500 text-sm mt-2">Logga in för att registrera poäng.</p>}
+    </section>
+  );
+}
+
+    // --- Results ---
+    function Results({ shooters, scores, competitions }) {
+  const [selectedCompetition, setSelectedCompetition] = React.useState(
+    competitions.length > 0 ? competitions[0].id : ""
+  );
+
+  React.useEffect(() => {
+    if (competitions.length > 0 && !selectedCompetition)
+      setSelectedCompetition(competitions[0].id);
+  }, [competitions]);
+
+  const selectedComp = competitions.find(c => c.id === selectedCompetition);
+  const skiljemalStationer = selectedComp?.skiljemal || [1,2,3];
+
+  const allStations = Array.from(
+    new Set(scores.filter(sc => sc.competitionId === selectedCompetition).map(sc => sc.station))
+  ).sort((a, b) => a - b);
+
+  const klassLista = ["öppen", "dam", "veteran", "ungdom", "junior med stöd"];
+
+  // Bygg resultat per klass
+  const grouped = {};
+  shooters.forEach(s => {
+    const shooterScores = scores.filter(sc => sc.shooterId === s.id && sc.competitionId === selectedCompetition);
+    // Räkna totalpoäng och femettor per station
+    const stationTotals = {};
+    const stationFemettors = {};
+    shooterScores.forEach(sc => {
+      stationTotals[sc.station] = (stationTotals[sc.station] || 0) + sc.total;
+      // Räkna femettor i denna station
+      const femettor = sc.shots ? sc.shots.filter(shot => shot.femetta && shot.value === 5).length : (sc.femettor || 0);
+      stationFemettors[sc.station] = (stationFemettors[sc.station] || 0) + femettor;
+    });
+    const total = Object.values(stationTotals).reduce((a, b) => a + b, 0);
+    if (!grouped[s.klass]) grouped[s.klass] = [];
+    grouped[s.klass].push({ ...s, total, stationTotals, stationFemettors });
+  });
+
+  // Sortera med skiljemålstationer från tävlingen
+  function jämförSkyttar(a, b) {
+    if (b.total !== a.total) return b.total - a.total;
+    for (const station of skiljemalStationer) {
+      const fa = a.stationFemettors?.[station] || 0;
+      const fb = b.stationFemettors?.[station] || 0;
+      if (fb !== fa) return fb - fa;
+    }
+    return 0;
+  }
+  klassLista.forEach(k => grouped[k]?.sort(jämförSkyttar));
+
+  // PDF-export med jsPDF-autotable
+  const exportPDF = () => {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({
+      orientation: "portrait",
+      unit: "mm",
+      format: "a4"
+    });
+
+    // Rubrik
+    doc.setFontSize(16);
+    doc.text("Resultatlista", 105, 20, { align: "center" });
+    doc.setFontSize(13);
+    doc.text(selectedComp?.name || "", 105, 28, { align: "center" });
+    doc.setFontSize(11);
+    doc.text(`Skiljemål: ${skiljemalStationer.map((s,i)=>`Skilje ${i+1}: St ${s}`).join(", ")}`, 20, 36);
+
+    let startY = 42;
+    klassLista.forEach(klass => {
+      const rows = [];
+      if (grouped[klass] && grouped[klass].length > 0) {
+        grouped[klass].forEach((s, i) => {
+          rows.push([
+            `${i + 1} ${i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : ""}`,
+            s.name,
+            s.club,
+            ...allStations.map(st => String(s.stationTotals[st] || 0)),
+            ...skiljemalStationer.map(st => String(s.stationFemettors[st] || 0)),
+            String(s.total)
+          ]);
+        });
+      } else {
+        rows.push(["Inga deltagare"]);
+      }
+
+      // Kolumnrubriker
+      const headers = [
+        ["Plats", "Skytt", "Ort", ...allStations.map(st => "St " + st), ...skiljemalStationer.map((st, i) => `Skilje ${i+1}`), "Summa"]
+      ];
+
+      doc.autoTable({
+        startY,
+        head: headers,
+        body: rows,
+        theme: "grid",
+        styles: {
+          fontSize: 10,
+          cellPadding: 2,
+          halign: "left",
+          valign: "middle"
+        },
+        headStyles: {
+          fillColor: [23, 37, 84],
+          textColor: 255,
+          fontStyle: "bold"
+        },
+        alternateRowStyles: { fillColor: [235, 242, 255] },
+        margin: { left: 10, right: 10 },
+        didDrawPage: (data) => {
+          doc.setFontSize(13);
+          doc.text(klass, 10, data.settings.startY - 4);
+        }
+      });
+      startY = doc.lastAutoTable.finalY + 10;
+    });
+
+    doc.save(`resultatlista_${selectedComp?.name || ""}.pdf`);
+  };
+
+  return (
+    <section>
+      <h2 className="text-xl font-bold mb-3 text-blue-700 flex items-center gap-2"><span>🏆</span> Resultatlista</h2>
+      <div className="mb-4 flex flex-wrap gap-2 items-center">
+        <label className="mr-2 text-sm font-medium text-blue-700">Välj deltävling:</label>
+        <select
+          value={selectedCompetition}
+          onChange={e => setSelectedCompetition(e.target.value)}
+          className="border p-2 rounded-lg min-w-[160px]"
+        >
+          {competitions.map(c => (
+            <option key={c.id} value={c.id}>{c.name}</option>
+          ))}
+        </select>
+        <span className="ml-4 text-blue-700 text-sm font-semibold">
+          Skiljemål: {skiljemalStationer.map(s => `St ${s}`).join(", ")}
+        </span>
+        <button onClick={exportPDF} className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-bold shadow transition ml-auto">Exportera som PDF</button>
+      </div>
+      {klassLista.map(klass => (
+        <div key={klass} className="mb-6">
+          <h3 className="text-lg font-bold mb-2 capitalize text-blue-600">{klass}</h3>
+          <div className="overflow-x-auto">
+            <table className="min-w-full border rounded-lg text-sm">
+              <thead>
+                <tr className="bg-blue-50">
+                  <th className="p-2 text-left">Plats</th>
+                  <th className="p-2 text-left">Skytt</th>
+                  <th className="p-2 text-left">Ort</th>
+                  {allStations.map(station => (
+                    <th className="p-2 text-left" key={station}>St {station}</th>
+                  ))}
+                  {skiljemalStationer.map((station, idx) => (
+                    <th className="p-2 text-left" key={"skilje" + station}>Skilje {idx+1}</th>
+                  ))}
+                  <th className="p-2 text-left">Summa</th>
+                </tr>
+              </thead>
+              <tbody>
+                {(grouped[klass] || []).length === 0 ? (
+                  <tr>
+                    <td className="p-2 text-gray-400" colSpan={4 + allStations.length}>Inga deltagare</td>
+                  </tr>
+                ) : (
+                  grouped[klass].map((s, i) => (
+                    <tr key={s.id} className="border-b">
+                      <td className="p-2">{i + 1} {i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : ""}</td>
+                      <td className="p-2 font-semibold">{s.name}</td>
+                      <td className="p-2">{s.club}</td>
+                      {allStations.map(station => (
+                        <td className="p-2 font-mono" key={station}>{s.stationTotals[station] || 0}</td>
+                      ))}
+                      {skiljemalStationer.map((station, idx) => (
+                        <td className="p-2 font-mono text-blue-700" key={"skilje" + station}>
+                          {s.stationFemettors[station] || 0}
+                        </td>
+                      ))}
+                      <td className="p-2 font-bold text-blue-700">{s.total}</td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      ))}
+    </section>
+  );
+}
+
+    // --- CupResults ---
+  function CupResults({ shooters, scores, competitions }) {
+  const klassLista = ["öppen", "dam", "veteran", "ungdom", "junior med stöd"];
+  const skiljemalStationer = [1,2,3]; // Fast värde
+  const allStations = Array.from(new Set(scores.map(sc => sc.station))).sort((a, b) => a - b);
+
+  // Steg 1: Placeringar per deltävling, per klass
+  const placementsPerCompetition = {};
+  competitions.forEach(comp => {
+    const shootersByClass = {};
+    klassLista.forEach(k => shootersByClass[k] = []);
+    shooters.forEach(s => {
+      const shooterScores = scores.filter(sc => sc.shooterId === s.id && sc.competitionId === comp.id);
+      const total = shooterScores.reduce((sum, sc) => sum + (sc.total || 0), 0);
+      // Beräkna femettor, och även per skiljemålsstation!
+      const femettorByStation = {};
+      allStations.forEach(station => {
+        femettorByStation[station] = shooterScores
+          .filter(sc => sc.station === station)
+          .reduce((sum, sc) => sum + (sc.shots ? sc.shots.filter(shot => shot.femetta && shot.value === 5).length : (sc.femettor || 0)), 0);
+      });
+      const totalFemettor = Object.values(femettorByStation).reduce((a, b) => a + b, 0);
+      shootersByClass[s.klass].push({ shooterId: s.id, total, femettorByStation, totalFemettor });
+    });
+    placementsPerCompetition[comp.id] = {};
+    klassLista.forEach(k => {
+      const arr = shootersByClass[k].filter(s => s.total > 0);
+      arr.sort((a, b) => {
+        if (b.total !== a.total) return b.total - a.total;
+        for (const station of skiljemalStationer) {
+          const fa = a.femettorByStation?.[station] || 0;
+          const fb = b.femettorByStation?.[station] || 0;
+          if (fb !== fa) return fb - fa;
+        }
+        if ((b.totalFemettor || 0) !== (a.totalFemettor || 0)) return (b.totalFemettor || 0) - (a.totalFemettor || 0);
+        return 0;
+      });
+      placementsPerCompetition[comp.id][k] = arr.map((s, i) => ({ ...s, placering: i + 1 }));
+    });
+  });
+
+  // Steg 2: Bygg cupresultat per skytt (klassvis placeringar)
+  const grouped = {};
+  shooters.forEach(s => {
+    const placings = competitions.map(comp => {
+      const klassPlacings = placementsPerCompetition[comp.id][s.klass] || [];
+      const p = klassPlacings.find(ss => ss.shooterId === s.id);
+      return p ? p.placering : null;
+    }).filter(p => p !== null);
+    placings.sort((a, b) => a - b);
+    const sumPlacings = placings.slice(0, 5).reduce((a, b) => a + b, 0);
+    const skyttObj = {
+      ...s,
+      placings,
+      sumPlacings,
+      deltävlingar: placings.length
+    };
+    if (!grouped[s.klass]) grouped[s.klass] = [];
+    if (skyttObj.placings.length > 0) grouped[s.klass].push(skyttObj);
+  });
+
+  klassLista.forEach(klass => {
+    if (grouped[klass]) grouped[klass].sort((a, b) => a.sumPlacings - b.sumPlacings);
+  });
+
+  // PDF-export med jsPDF-autotable
+  function exportPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({
+      orientation: "portrait",
+      unit: "mm",
+      format: "a4"
+    });
+
+    doc.setFontSize(16);
+    doc.text("Cupresultat – 5 bästa klassplaceringar", 105, 20, { align: "center" });
+    doc.setFontSize(11);
+    doc.text(`Skiljemål: ${skiljemalStationer.map(s=>"St "+s).join(", ")}`, 20, 28);
+
+    let startY = 34;
+    klassLista.forEach(klass => {
+      const rows = [];
+      if (grouped[klass] && grouped[klass].length > 0) {
+        grouped[klass].forEach((s, i) => {
+          rows.push([
+            `${i + 1} ${i === 0 ? "🏆" : i === 1 ? "🥈" : i === 2 ? "🥉" : ""}`,
+            s.name,
+            s.club,
+            s.deltävlingar,
+            isNaN(s.sumPlacings) ? "-" : s.sumPlacings,
+            s.placings.slice(0,5).join(", ") + (s.placings.length > 5 ? " ..." : "")
+          ]);
+        });
+      } else {
+        rows.push(["Inga deltagare"]);
+      }
+
+      // Kolumnrubriker
+      const headers = [["Plats", "Skytt", "Ort", "Antal deltävlingar", "Cup-poäng", "Placeringar"]];
+
+      doc.autoTable({
+        startY,
+        head: headers,
+        body: rows,
+        theme: "grid",
+        styles: {
+          fontSize: 10,
+          cellPadding: 2,
+          halign: "left",
+          valign: "middle"
+        },
+        headStyles: {
+          fillColor: [180, 137, 0],
+          textColor: 255,
+          fontStyle: "bold"
+        },
+        alternateRowStyles: { fillColor: [255, 250, 205] },
+        margin: { left: 10, right: 10 },
+        didDrawPage: (data) => {
+          doc.setFontSize(13);
+          doc.text(klass, 10, data.settings.startY - 4);
+        }
+      });
+      startY = doc.lastAutoTable.finalY + 10;
+    });
+
+    doc.save(`cupresultat.pdf`);
+  }
+
+  return (
+    <section>
+      <h2 className="text-xl font-bold mb-3 text-yellow-700 flex items-center gap-2"><span>🥇</span> Cupresultat </h2>
+      <div className="mb-4 flex flex-wrap gap-2 items-center">
+        <button onClick={exportPDF} className="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg font-bold shadow transition">Exportera som PDF</button>
+      </div>
+      {klassLista.map(klass => (
+        <div key={klass} className="mb-6">
+          <h3 className="text-lg font-bold mb-2 capitalize text-yellow-700">{klass}</h3>
+          <div className="overflow-x-auto">
+            <table className="min-w-full border rounded-lg text-sm">
+              <thead>
+                <tr className="bg-yellow-50">
+                  <th className="p-2 text-left">Plats</th>
+                  <th className="p-2 text-left">Skytt</th>
+                  <th className="p-2 text-left">Ort</th>
+                  <th className="p-2 text-left">Antal deltävlingar</th>
+                  <th className="p-2 text-left">Cup-poäng</th>
+                  <th className="p-2 text-left">Placeringar</th>
+                </tr>
+              </thead>
+              <tbody>
+                {(!grouped[klass] || grouped[klass].length === 0) ? (
+                  <tr>
+                    <td className="p-2 text-gray-400" colSpan={6}>Inga deltagare</td>
+                  </tr>
+                ) : (
+                  grouped[klass].map((s, i) => (
+                    <tr key={s.id} className="border-b">
+                      <td className="p-2">{i + 1} {i === 0 ? "🏆" : i === 1 ? "🥈" : i === 2 ? "🥉" : ""}</td>
+                      <td className="p-2 font-semibold">{s.name}</td>
+                      <td className="p-2">{s.club}</td>
+                      <td className="p-2">{s.deltävlingar}</td>
+                      <td className="p-2 font-bold text-yellow-700">{isNaN(s.sumPlacings) ? "-" : s.sumPlacings}</td>
+                      <td className="p-2">{s.placings.slice(0,5).join(", ")}{s.placings.length > 5 ? " ..." : ""}</td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      ))}
+      <p className="mt-3 text-gray-600 text-sm">Cup-poäng = summan av de 5 bästa <b>placeringarna</b>. Lägst poäng vinner!</p>
+    </section>
+  );
+}
 
     // Sista raden:
     ReactDOM.createRoot(document.getElementById("app")).render(<App />);
