@@ -660,7 +660,7 @@
       if (grouped[klass] && grouped[klass].length > 0) {
         grouped[klass].forEach((s, i) => {
           rows.push([
-            
+            `${i + 1} ${i === 0 ? "G" : i === 1 ? "S" : i === 2 ? "B" : ""}`,
             s.name,
             s.club,
             ...allStations.map(st => String(s.stationTotals[st] || 0)),
