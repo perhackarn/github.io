@@ -573,7 +573,7 @@
     if (!user) return alert("Du måste vara inloggad!");
     if (!competitionId || !shooterId) return;
     const total = shots.reduce((a, b) => a + b.value, 0);
-    const femettor = shots.filter(s => s.femetta && s.value === 5 || 10).length;
+    const femettor = shots.filter(s => s.femetta && s.value === 5 || === 10).length;
     await addDoc(collection(db, "scores"), {
       competitionId,
       shooterId,
