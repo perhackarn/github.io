@@ -717,7 +717,7 @@
     shooterScores.forEach(sc => {
       stationTotals[sc.station] = (stationTotals[sc.station] || 0) + sc.total;
       // Räkna femettor i denna station
-      const femettor = sc.shots ? sc.shots.filter(shot => shot.femetta && shot.value === 5).length : (sc.femettor || 0);
+      const femettor = sc.shots ? sc.shots.filter(shot => shot.femetta && (shot.value === 5 || shot.value === 10).length : (sc.femettor || 0);
       stationFemettors[sc.station] = (stationFemettors[sc.station] || 0) + femettor;
     });
     const total = Object.values(stationTotals).reduce((a, b) => a + b, 0);
