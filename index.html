@@ -775,7 +775,9 @@
             s.name,
             s.club,
             ...allStations.map(st => String(s.stationTotals[st] || 0)),
-            ...skiljemalStationer.map(st => String(s.stationFemettors[st] || 0)),
+            ...skiljemalStationer.map(st => 
+  `${s.stationTotals[st] || 0}/${s.stationFemettors[st] || 0}`
+),
             String(s.total)
           ]);
         });
