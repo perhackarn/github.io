@@ -854,26 +854,11 @@
                   {allStations.map(station => (
                     <th className="p-3 text-left font-medium text-primary-800" key={station}>St {station}</th>
                   ))}
-               <thead>
-  <tr>
-    {/* ... */}
-    {skiljemalStationer.map((station, idx) => (
-      <th className="p-3 text-left font-medium text-primary-800" key={"skilje" + station}>
-        Skilje {idx+1} <span className="font-normal text-xs">(poäng/5¹/10¹)</span>
-      </th>
-    ))}
-    {/* ... */}
-  </tr>
-</thead>
-<tbody>
-  {/* ... */}
-  {skiljemalStationer.map((station, idx) => (
-    <td className="p-3 font-mono text-primary-700 font-medium" key={"skilje" + station}>
-      {(s.stationTotals[station] || 0) + '/' + (s.stationFemettors[station] || 0)}
-    </td>
-  ))}
-  {/* ... */}
-</tbody> 
+            {skiljemalStationer.map((station, idx) => (
+  <td className="p-3 font-mono text-primary-700 font-medium" key={"skilje" + station}>
+    {s.stationFemettors[station] || 0}
+  </td>
+))}   
                   <th className="p-3 text-left font-medium text-primary-800">Summa</th>
                 </tr>
               </thead>
