@@ -854,7 +854,10 @@
                   {allStations.map(station => (
                     <th className="p-3 text-left font-medium text-primary-800" key={station}>St {station}</th>
                   ))}
-      {skiljemalStationer.map((station, idx) => (
+
+
+{skiljemalStationer.map((station, idx) => (
+  <td key={station}>{idx + 1}</td>
 
 <th className="p-3 text-left font-medium text-primary-800" key= {"skilje" + station}>Skilje (idx+1}</th>
 
