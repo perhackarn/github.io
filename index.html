@@ -727,14 +727,25 @@
 
   // Sortera med skiljemålstationer från tävlingen
   function jämförSkyttar(a, b) {
-    if (b.total !== a.total) return b.total - a.total;
-    for (const station of skiljemalStationer) {
-      const fa = a.stationFemettors?.[station] || 0;
-      const fb = b.stationFemettors?.[station] || 0;
-      if (fb !== fa) return fb - fa;
-    }
-    return 0;
+  // Först totalpoäng
+  if (b.total !== a.total) return b.total - a.total;
+
+  // 1. Jämför poäng på skiljemålsstationerna
+  for (const station of skiljemalStationer) {
+    const pa = a.stationTotals?.[station] || 0;
+    const pb = b.stationTotals?.[station] || 0;
+    if (pb !== pa) return pb - pa;
   }
+
+  // 2. Om fortfarande lika: jämför femettor på skiljemålsstationerna
+  for (const station of skiljemalStationer) {
+    const fa = a.stationFemettors?.[station] || 0;
+    const fb = b.stationFemettors?.[station] || 0;
+    if (fb !== fa) return fb - fa;
+  }
+
+  return 0;
+}
   klassLista.forEach(k => grouped[k]?.sort(jämförSkyttar));
 
   // PDF-export med jsPDF-autotable
