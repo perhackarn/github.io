@@ -856,7 +856,7 @@
                   ))}
                 {skiljemalStationer.map((station, idx) => (
   <th className="p-3 text-left font-medium text-primary-800" key={"skilje" + station}>
-    Skilje {idx + 1}
+       {(s.stationTotals[station] || 0) + '/' + (s.stationFemettors[station] || 0)}
   </th>
 ))}  
                   <th className="p-3 text-left font-medium text-primary-800">Summa</th>
