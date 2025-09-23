@@ -894,9 +894,9 @@
                       ))}
                       {skiljemalStationer.map((station, idx) => (
                         <td className="p-3 font-mono text-primary-700 font-medium" key={"skilje" + station}>
-                          {s.stationFemettors[station] || 0}
-                        </td>
-                      ))}
+                          {(s.stationTotals[station] || 0) + "/" + (s.stationFemettors[station] || 0)}
+  </td>
+))}
                       <td className="p-3 font-bold text-primary-800">{s.total}</td>
                     </tr>
                   ))
