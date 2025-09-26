@@ -92,7 +92,7 @@
       signInWithEmailAndPassword
     } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-auth.js";
 
-    const firebaseConfig = { apiKey: "AIzaSyB0C2ecPKLnbIMzWuj9LHcZa_fa9c47GzM", authDomain: "landbys-cup-2288f.firebaseapp.com", projectId: "landbys-cup-2288f", storageBucket: "landbys-cup-2288f.fireb[...]
+    const firebaseConfig = { apiKey: "AIzaSyB0C2ecPKLnbIMzWuj9LHcZa_fa9c47GzM", authDomain: "landbys-cup-2288f.firebaseapp.com", projectId: "landbys-cup-2288f", storageBucket: "landbys-cup-2288f.appspot.com", messagingSenderId: "333036693845", appId: "1:333036693845:web:c8e3aa17070732314a5259", measurementId: "G-RFR4M0G41Q" };
 
     const app = initializeApp(firebaseConfig);
     export const db = getFirestore(app);
@@ -398,7 +398,7 @@
                   <span className="text-xs text-primary-500 ml-2">(max 3 st)</span>
                 </div>
                 <div className="flex gap-2">
-                  <button onClick={saveEdit} disabled={!user} className={`bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg font-medium transition-colors ${!user?"opacity-50 cursor-not-a[...]
+                  <button onClick={saveEdit} disabled={!user} className={`bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg font-medium transition-colors ${!user?"opacity-50 cursor-not-allowed" : ""}`}>Spara</button>
                   <button onClick={cancelEdit} className="bg-primary-200 hover:bg-primary-300 text-primary-700 px-3 py-2 rounded-lg font-medium transition-colors">Avbryt</button>
                 </div>
               </>
@@ -410,8 +410,8 @@
                   Skiljemål: {c.skiljemal ? c.skiljemal.map(s => `St ${s}`).join(", ") : "–"}
                 </span>
                 <div className="flex gap-2">
-                  <button onClick={()=>startEdit(c)} disabled={!user} className={`bg-primary-100 hover:bg-primary-200 text-primary-700 px-3 py-2 rounded-lg font-medium transition-colors ${!user?"opaci[...]
-                  <button onClick={()=>removeCompetition(c.id)} disabled={!user} className={`bg-red-100 hover:bg-red-200 text-red-700 px-3 py-2 rounded-lg font-medium transition-colors ${!user?"opacit[...]
+                  <button onClick={()=>startEdit(c)} disabled={!user} className={`bg-primary-100 hover:bg-primary-200 text-primary-700 px-3 py-2 rounded-lg font-medium transition-colors ${!user?"opacity-50 cursor-not-allowed" : ""}`}>Ändra</button>
+                  <button onClick={()=>removeCompetition(c.id)} disabled={!user} className={`bg-red-100 hover:bg-red-200 text-red-700 px-3 py-2 rounded-lg font-medium transition-colors ${!user?"opacity-50 cursor-not-allowed" : ""}`}>Ta bort</button>
                 </div>
               </>
             )}
@@ -486,7 +486,7 @@
           className="border border-primary-300 p-3 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"/>
         <input value={club} onChange={e=>setClub(e.target.value)} placeholder="Ort"
           className="border border-primary-300 p-3 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"/>
-        <select value={klass} onChange={e=>setKlass(e.target.value)} className="border border-primary-300 p-3 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"[...]
+        <select value={klass} onChange={e=>setKlass(e.target.value)} className="border border-primary-300 p-3 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors bg-white">
           <option>öppen</option>
           <option>dam</option>
           <option>veteran</option>
@@ -513,7 +513,7 @@
                   <option>junior med stöd</option>
                 </select>
                 <div className="flex gap-2">
-                  <button onClick={saveEdit} disabled={!user} className={`bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg font-medium transition-colors ${!user?"opacity-50 cursor-not-a[...]
+                  <button onClick={saveEdit} disabled={!user} className={`bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg font-medium transition-colors ${!user?"opacity-50 cursor-not-allowed" : ""}`}>Spara</button>
                   <button onClick={cancelEdit} className="bg-primary-200 hover:bg-primary-300 text-primary-700 px-3 py-2 rounded-lg font-medium transition-colors">Avbryt</button>
                 </div>
               </>
@@ -523,8 +523,8 @@
                 <span className="flex-1 font-medium text-primary-800">{s.name} <span className="text-primary-600 font-normal">({s.club})</span></span>
                 <span className="bg-primary-200 text-primary-800 px-3 py-1 rounded-full text-sm font-medium">{s.klass}</span>
                 <div className="flex gap-2">
-                  <button onClick={()=>startEdit(s)} disabled={!user} className={`bg-primary-100 hover:bg-primary-200 text-primary-700 px-3 py-2 rounded-lg font-medium transition-colors ${!user?"opaci[...]
-                  <button onClick={()=>removeShooter(s.id)} disabled={!user} className={`bg-red-100 hover:bg-red-200 text-red-700 px-3 py-2 rounded-lg font-medium transition-colors ${!user?"opacity-50[...]
+                  <button onClick={()=>startEdit(s)} disabled={!user} className={`bg-primary-100 hover:bg-primary-200 text-primary-700 px-3 py-2 rounded-lg font-medium transition-colors ${!user?"opacity-50 cursor-not-allowed" : ""}`}>Ändra</button>
+                  <button onClick={()=>removeShooter(s.id)} disabled={!user} className={`bg-red-100 hover:bg-red-200 text-red-700 px-3 py-2 rounded-lg font-medium transition-colors ${!user?"opacity-50 cursor-not-allowed" : ""}`}>Ta bort</button>
                 </div>
               </>
             )}
@@ -603,7 +603,7 @@
         Registrera poäng
       </h2>
       <div className="flex flex-col md:flex-row gap-4 mb-6">
-        <select value={competitionId} onChange={e => setCompetitionId(e.target.value)} className="border border-primary-300 p-3 rounded-lg flex-1 focus:ring-2 focus:ring-primary-500 focus:border-prima[...]
+        <select value={competitionId} onChange={e => setCompetitionId(e.target.value)} className="border border-primary-300 p-3 rounded-lg flex-1 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors bg-white">
           <option value="">Välj tävling</option>
           {competitions.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
         </select>
@@ -676,7 +676,7 @@
         ))}
       </div>
       <div className="text-lg font-semibold text-primary-800 mb-6 text-center bg-white p-4 rounded-lg border border-primary-200">
-        Summa: <span className="text-primary-700">{shots.reduce((a, b) => a + b.value, 0)} poäng</span>, 5¹/10¹or: <span className="text-primary-700">{shots.filter(s => s.femetta && (s.value === 5 [...]
+        Summa: <span className="text-primary-700">{shots.reduce((a, b) => a + b.value, 0)} poäng</span>, 5¹/10¹or: <span className="text-primary-700">{shots.filter(s => s.femetta && (s.value === 5 || s.value === 10)).length}</span>
       </div>
       <div className="text-center">
         <button onClick={saveScore}
@@ -999,4 +999,91 @@ function CupResults({ shooters, scores, competitions }) {
 
       doc.autoTable({
         startY,
-[...]
+        head: headers,
+        body: rows,
+        theme: "grid",
+        styles: {
+          fontSize: 8,
+          cellPadding: 1.5,
+          halign: "left",
+          valign: "middle"
+        },
+        headStyles: {
+          fillColor: [71, 85, 105],
+          textColor: 255,
+          fontStyle: "bold"
+        },
+        alternateRowStyles: { fillColor: [248, 250, 252] },
+        margin: { left: 10, right: 10 },
+        didDrawPage: (data) => {
+          doc.setFontSize(13);
+          doc.text(klass, 10, data.settings.startY - 4);
+        }
+      });
+      startY = doc.lastAutoTable.finalY + 10;
+    });
+
+    doc.save(`cupresultat.pdf`);
+  }
+
+  return (
+    <section>
+      <h2 className="text-xl font-semibold mb-6 text-primary-800 flex items-center gap-3">
+        <AwardIcon className="w-6 h-6" />
+        Cupresultat
+      </h2>
+      <div className="mb-6 flex flex-wrap gap-4 items-center bg-primary-50 p-4 rounded-lg border border-primary-200">
+        <p className="text-primary-700 text-sm">
+          Resultatet baseras på de 5 bästa placeringarna i deltävlingarna.
+        </p>
+        <button onClick={exportPDF} className="bg-primary-700 hover:bg-primary-800 text-white px-4 py-2 rounded-lg font-medium shadow-sm transition-colors ml-auto">Exportera som PDF</button>
+      </div>
+
+      {klassLista.map(klass => (
+        <div key={klass} className="mb-8">
+          <h3 className="text-lg font-semibold mb-4 capitalize text-primary-800 bg-primary-100 px-3 py-2 rounded-lg">{klass}</h3>
+          <div className="overflow-x-auto">
+            <table className="min-w-full border border-primary-200 rounded-lg text-sm bg-white">
+              <thead>
+                <tr className="bg-primary-100 border-b border-primary-200">
+                  <th className="p-3 text-left font-medium text-primary-800">Plats</th>
+                  <th className="p-3 text-left font-medium text-primary-800">Skytt</th>
+                  <th className="p-3 text-left font-medium text-primary-800">Ort</th>
+                  {competitionSorted.map(c => (
+                    <th key={c.id} className="p-2 text-left font-medium text-primary-800 text-xs">{c.name}</th>
+                  ))}
+                  <th className="p-3 text-left font-medium text-primary-800">Summa</th>
+                </tr>
+              </thead>
+              <tbody>
+                {(grouped[klass] || []).length === 0 ? (
+                  <tr>
+                    <td className="p-3 text-primary-500" colSpan={4 + competitions.length}>Inga deltagare</td>
+                  </tr>
+                ) : (
+                  grouped[klass].map((s, i) => (
+                    <tr key={s.id} className="border-b border-primary-100 hover:bg-primary-50 transition-colors">
+                      <td className="p-3 font-medium">{i + 1}</td>
+                      <td className="p-3 font-medium text-primary-800">{s.name}</td>
+                      <td className="p-3 text-primary-600">{s.club}</td>
+                      {s.placings.map((p, idx) => (
+                        <td key={idx} className="p-2 font-mono text-primary-700">{p === 1000 ? "-" : p}</td>
+                      ))}
+                      <td className="p-3 font-bold text-primary-800">{s.sumPlacings}</td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      ))}
+    </section>
+  );
+}
+
+
+    ReactDOM.render(<App />, document.getElementById('app'));
+  </script>
+</body>
+</html>
