@@ -92,7 +92,7 @@
       signInWithEmailAndPassword
     } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-auth.js";
 
-    const firebaseConfig = { apiKey: "AIzaSyB0C2ecPKLnbIMzWuj9LHcZa_fa9c47GzM", authDomain: "landbys-cup-2288f.firebaseapp.com", projectId: "landbys-cup-2288f", storageBucket: "landbys-cup-2288f.appspot.com", messagingSenderId: "36838337886", appId: "1:36838337886:web:8625cac2165513fa89a910" };
+    const firebaseConfig = { apiKey: "AIzaSyB0C2ecPKLnbIMzWuj9LHcZa_fa9c47GzM", authDomain: "landbys-cup-2288f.firebaseapp.com", projectId: "landbys-cup-2288f", storageBucket: "landbys-cup-2288f.appsp[...]
 
     const app = initializeApp(firebaseConfig);
     export const db = getFirestore(app);
@@ -407,7 +407,7 @@
                   <span className="text-xs text-primary-500 ml-2">(max 3 st)</span>
                 </div>
                 <div className="flex gap-2">
-                  <button onClick={saveEdit} disabled={!user} className={`bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg font-medium transition-colors ${!user?"opacity-50 cursor-not-allowed":""}`}>Spara</button>
+                  <button onClick={saveEdit} disabled={!user} className={`bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg font-medium transition-colors ${!user?"opacity-50 cursor-not-a[...]
                   <button onClick={cancelEdit} className="bg-primary-200 hover:bg-primary-300 text-primary-700 px-3 py-2 rounded-lg font-medium transition-colors">Avbryt</button>
                 </div>
               </>
@@ -419,8 +419,8 @@
                   Skiljemål: {c.skiljemal ? c.skiljemal.map(s => `St ${s}`).join(", ") : "–"}
                 </span>
                 <div className="flex gap-2">
-                  <button onClick={()=>startEdit(c)} disabled={!user} className={`bg-primary-100 hover:bg-primary-200 text-primary-700 px-3 py-2 rounded-lg font-medium transition-colors ${!user?"opacity-50 cursor-not-allowed":""}`}>Ändra</button>
-                  <button onClick={()=>removeCompetition(c.id)} disabled={!user} className={`bg-red-100 hover:bg-red-200 text-red-700 px-3 py-2 rounded-lg font-medium transition-colors ${!user?"opacity-50 cursor-not-allowed":""}`}>Ta bort</button>
+                  <button onClick={()=>startEdit(c)} disabled={!user} className={`bg-primary-100 hover:bg-primary-200 text-primary-700 px-3 py-2 rounded-lg font-medium transition-colors ${!user?"opaci[...]
+                  <button onClick={()=>removeCompetition(c.id)} disabled={!user} className={`bg-red-100 hover:bg-red-200 text-red-700 px-3 py-2 rounded-lg font-medium transition-colors ${!user?"opacit[...]
                 </div>
               </>
             )}
@@ -443,6 +443,7 @@
       const [name, setName] = React.useState("");
       const [club, setClub] = React.useState("");
       const [klass, setKlass] = React.useState("öppen");
+      const [confirmation, setConfirmation] = React.useState(null);
 
       const [editId, setEditId] = React.useState(null);
       const [editName, setEditName] = React.useState("");
@@ -453,6 +454,8 @@
         if (!name || !club) return;
 
         try {
+          let newStartNumber;
+          const shooterName = name;
           await runTransaction(db, async (transaction) => {
             const counterRef = doc(db, "counters", "shooter");
             const counterDoc = await transaction.get(counterRef);
@@ -461,13 +464,16 @@
               throw "Shooter counter document does not exist!";
             }
 
-            const newStartNumber = counterDoc.data().currentNumber + 1;
+            newStartNumber = counterDoc.data().currentNumber + 1;
             
             const newShooterRef = doc(collection(db, "shooters"));
             
-            transaction.set(newShooterRef, { name, club, klass, startNumber: newStartNumber });
+            transaction.set(newShooterRef, { name: shooterName, club, klass, startNumber: newStartNumber });
             transaction.update(counterRef, { currentNumber: newStartNumber });
           });
+
+          setConfirmation({ name: shooterName, startNumber: newStartNumber });
+          setTimeout(() => setConfirmation(null), 5000);
 
           setName(""); 
           setClub("");
@@ -507,12 +513,23 @@
             <UsersIcon className="w-6 h-6" />
             Registrera ny skytt
           </h2>
+          {confirmation && (
+            <div className="bg-green-100 border border-green-300 text-green-800 px-4 py-3 rounded-lg relative mb-4 shadow-sm" role="alert">
+              <strong className="font-semibold">Ny skytt registrerad:</strong>
+              <span className="block sm:inline ml-2">
+                Namn: {confirmation.name}, Startnummer: {confirmation.startNumber}
+              </span>
+              <button onClick={() => setConfirmation(null)} className="absolute top-0 bottom-0 right-0 px-4 py-3">
+                <svg className="fill-current h-6 w-6 text-green-600" role="button" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><title>Close</title><path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z"/></svg>
+              </button>
+            </div>
+          )}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
             <input value={name} onChange={e=>setName(e.target.value)} placeholder="Namn"
               className="border border-primary-300 p-3 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"/>
             <input value={club} onChange={e=>setClub(e.target.value)} placeholder="Ort"
               className="border border-primary-300 p-3 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"/>
-            <select value={klass} onChange={e=>setKlass(e.target.value)} className="border border-primary-300 p-3 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors">
+            <select value={klass} onChange={e=>setKlass(e.target.value)} className="border border-primary-300 p-3 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-col[...]
               <option>öppen</option>
               <option>dam</option>
               <option>veteran</option>
@@ -540,7 +557,7 @@
                       <option>junior med stöd</option>
                     </select>
                     <div className="flex gap-2">
-                      <button onClick={saveEdit} disabled={!user} className={`bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg font-medium transition-colors ${!user?"opacity-50 cursor-not-allowed":""}`}>Spara</button>
+                      <button onClick={saveEdit} disabled={!user} className={`bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg font-medium transition-colors ${!user?"opacity-50 cursor-n[...]
                       <button onClick={cancelEdit} className="bg-primary-200 hover:bg-primary-300 text-primary-700 px-3 py-2 rounded-lg font-medium transition-colors">Avbryt</button>
                     </div>
                   </>
@@ -550,8 +567,8 @@
                     <span className="flex-1 font-medium text-primary-800">{s.name} <span className="text-primary-600 font-normal">({s.club})</span></span>
                     <span className="bg-primary-200 text-primary-800 px-3 py-1 rounded-full text-sm font-medium">{s.klass}</span>
                     <div className="flex gap-2">
-                      <button onClick={()=>startEdit(s)} disabled={!user} className={`bg-primary-100 hover:bg-primary-200 text-primary-700 px-3 py-2 rounded-lg font-medium transition-colors ${!user?"opacity-50 cursor-not-allowed":""}`}>Ändra</button>
-                      <button onClick={()=>removeShooter(s.id)} disabled={!user} className={`bg-red-100 hover:bg-red-200 text-red-700 px-3 py-2 rounded-lg font-medium transition-colors ${!user?"opacity-50 cursor-not-allowed":""}`}>Ta bort</button>
+                      <button onClick={()=>startEdit(s)} disabled={!user} className={`bg-primary-100 hover:bg-primary-200 text-primary-700 px-3 py-2 rounded-lg font-medium transition-colors ${!user?"o[...]
+                      <button onClick={()=>removeShooter(s.id)} disabled={!user} className={`bg-red-100 hover:bg-red-200 text-red-700 px-3 py-2 rounded-lg font-medium transition-colors ${!user?"opacit[...]
                     </div>
                   </>
                 )}
@@ -630,7 +647,7 @@
         Registrera poäng
       </h2>
       <div className="flex flex-col md:flex-row gap-4 mb-6">
-        <select value={competitionId} onChange={e => setCompetitionId(e.target.value)} className="border border-primary-300 p-3 rounded-lg flex-1 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors">
+        <select value={competitionId} onChange={e => setCompetitionId(e.target.value)} className="border border-primary-300 p-3 rounded-lg flex-1 focus:ring-2 focus:ring-primary-500 focus:border-prima[...]
           <option value="">Välj tävling</option>
           {competitions.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
         </select>
@@ -703,7 +720,7 @@
         ))}
       </div>
       <div className="text-lg font-semibold text-primary-800 mb-6 text-center bg-white p-4 rounded-lg border border-primary-200">
-        Summa: <span className="text-primary-700">{shots.reduce((a, b) => a + b.value, 0)} poäng</span>, 5¹/10¹or: <span className="text-primary-700">{shots.filter(s => s.femetta && (s.value === 5 || s.value === 10)).length}</span>
+        Summa: <span className="text-primary-700">{shots.reduce((a, b) => a + b.value, 0)} poäng</span>, 5¹/10¹or: <span className="text-primary-700">{shots.filter(s => s.femetta && (s.value === 5 [...]
       </div>
       <div className="text-center">
         <button onClick={saveScore}
@@ -998,15 +1015,4 @@ function CupResults({ shooters, scores, competitions }) {
     const doc = new jsPDF({
       orientation: "portrait",
       unit: "mm",
-      format: "a4"
-    });
-    // ... implementation for PDF export
-  }
-
-  // ... (return JSX for CupResults)
-}
-
-    ReactDOM.render(<App />, document.getElementById('app'));
-  </script>
-</body>
-</html>
+[...]
