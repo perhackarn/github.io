@@ -123,13 +123,16 @@
 
     onAuthStateChanged(auth, (user) => {
       renderHeaderAuth(user);
+      const loginContainer = document.getElementById("login-box");
+      const userContainer = document.getElementById("user-box");
+
       if (user) {
-        loginBox.classList.add("hidden");
-        userBox.classList.remove("hidden");
+        loginContainer.classList.add("hidden");
+        userContainer.classList.remove("hidden");
         userEmailSpan.textContent = user.email || user.displayName || "Okänd användare";
       } else {
-        loginBox.classList.remove("hidden");
-        userBox.classList.add("hidden");
+        loginContainer.classList.remove("hidden");
+        userContainer.classList.add("hidden");
         userEmailSpan.textContent = "";
       }
     });
@@ -210,7 +213,17 @@
     function useAuth() {
       const [user, setUser] = React.useState(window.firebaseAuth.auth.currentUser);
       React.useEffect(() => {
-        const unsub = window.firebaseAuth.auth.onAuthStateChanged(setUser);
+        const unsub = window.firebaseAuth.auth.onAuthStateChanged(user => {
+            setUser(user);
+            // Hide login box based on user state, but keep app content visible
+            const loginContainer = document.getElementById("login-box");
+            const userContainer = document.getElementById("user-box");
+            if (user) {
+                loginContainer.classList.add("hidden");
+            } else {
+                loginContainer.classList.remove("hidden");
+            }
+        });
         return () => unsub && unsub();
       }, []);
       return user;
@@ -242,26 +255,22 @@
         });
       }, []);
 
-      if (!user) {
-        return (
-          <div className="bg-white rounded-xl shadow-sm p-6 md:p-8 mt-6 border border-primary-200">
-            <Results shooters={shooters} scores={scores} competitions={competitions} />
-          </div>
-        );
-      }
-
       return (
         <div className="bg-white rounded-xl shadow-sm p-6 md:p-8 mt-6 border border-primary-200">
           <nav className="flex flex-wrap gap-2 mb-8 justify-center md:justify-start">
-            <TabBtn active={tab==="competitions"} onClick={()=>setTab("competitions")} icon={<CalendarIcon />}>Deltävlingar</TabBtn>
-            <TabBtn active={tab==="shooters"} onClick={()=>setTab("shooters")} icon={<UsersIcon />}>Skyttar</TabBtn>
-            <TabBtn active={tab==="scores"} onClick={()=>setTab("scores")} icon={<ClipboardIcon />}>Registrera Poäng</TabBtn>
             <TabBtn active={tab==="results"} onClick={()=>setTab("results")} icon={<TrophyIcon />}>Resultatlistor</TabBtn>
             <TabBtn active={tab==="cup"} onClick={()=>setTab("cup")} icon={<AwardIcon />}>Cupresultat</TabBtn>
+            <TabBtn active={tab==="shooters"} onClick={()=>setTab("shooters")} icon={<UsersIcon />}>Skyttar</TabBtn>
+            {user && (
+                <>
+                    <TabBtn active={tab==="competitions"} onClick={()=>setTab("competitions")} icon={<CalendarIcon />}>Deltävlingar</TabBtn>
+                    <TabBtn active={tab==="scores"} onClick={()=>setTab("scores")} icon={<ClipboardIcon />}>Registrera Poäng</TabBtn>
+                </>
+            )}
           </nav>
-          {tab==="competitions" && <Competitions competitions={competitions} user={user} />}
+          {tab==="competitions" && user && <Competitions competitions={competitions} user={user} />}
           {tab==="shooters" && <Shooters shooters={shooters} user={user} />}
-          {tab==="scores" && <Scores shooters={shooters} competitions={competitions} user={user} />}
+          {tab==="scores" && user && <Scores shooters={shooters} competitions={competitions} user={user} />}
           {tab==="results" && <Results shooters={shooters} scores={scores} competitions={competitions} />}
           {tab==="cup" && <CupResults shooters={shooters} scores={scores} competitions={competitions} />}
         </div>
@@ -441,7 +450,6 @@
       const [editKlass, setEditKlass] = React.useState("öppen");
 
       const addShooter = async () => {
-        if (!user) return alert("Du måste vara inloggad!");
         if (!name || !club) return;
 
         try {
@@ -514,10 +522,9 @@
               <option>junior med stöd</option>
             </select>
             <button onClick={addShooter}
-              className={`bg-green-600 hover:bg-green-700 text-white px-4 py-3 rounded-lg font-medium transition-colors shadow-sm ${!user ? "opacity-50 cursor-not-allowed" : ""}`}
-              disabled={!user}>Lägg till</button>
+              className="bg-green-600 hover:bg-green-700 text-white px-4 py-3 rounded-lg font-medium transition-colors shadow-sm">Lägg till</button>
           </div>
-          {!user && <p className="text-red-600 text-sm mb-4 bg-red-50 p-3 rounded-lg border border-red-200">Logga in för att lägga till/ändra/tar bort skyttar.</p>}
+          {!user && <p className="text-yellow-600 text-sm mb-4 bg-yellow-50 p-3 rounded-lg border border-yellow-200">Logga in för att kunna ändra eller ta bort skyttar.</p>}
           <div className="space-y-1">
             {filteredShooters.map(s=>
               <div key={s.id} className="py-4 px-4 bg-primary-50 rounded-lg border border-primary-200 flex flex-col md:flex-row md:items-center justify-between gap-3">
