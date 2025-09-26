@@ -86,7 +86,7 @@
       signInWithEmailAndPassword
     } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-auth.js";
 
-    const firebaseConfig = { apiKey: "AIzaSyB0C2ecPKLnbIMzWuj9LHcZa_fa9c47GzM", authDomain: "landbys-cup-2288f.firebaseapp.com", projectId: "landbys-cup-2288f", storageBucket: "landbys-cup-2288f.appspot.com", messagingSenderId: "338833446549", appId: "1:338833446549:web:355f9a6f39843649d0d34c" };
+    const firebaseConfig = { apiKey: "AIzaSyB0C2ecPKLnbIMzWuj9LHcZa_fa9c47GzM", authDomain: "landbys-cup-2288f.firebaseapp.com", projectId: "landbys-cup-2288f", storageBucket: "landbys-cup-2288f.appsp[...]
 
     const app = initializeApp(firebaseConfig);
     export const db = getFirestore(app);
@@ -398,7 +398,7 @@
                   <span className="text-xs text-primary-500 ml-2">(max 3 st)</span>
                 </div>
                 <div className="flex gap-2">
-                  <button onClick={saveEdit} disabled={!user} className={`bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg font-medium transition-colors ${!user ? "opacity-50 cursor-not-allowed" : ""}`}>Spara</button>
+                  <button onClick={saveEdit} disabled={!user} className={`bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg font-medium transition-colors ${!user ? "opacity-50 cursor-not[...]
                   <button onClick={cancelEdit} className="bg-primary-200 hover:bg-primary-300 text-primary-700 px-3 py-2 rounded-lg font-medium transition-colors">Avbryt</button>
                 </div>
               </>
@@ -410,8 +410,8 @@
                   Skiljemål: {c.skiljemal ? c.skiljemal.map(s => `St ${s}`).join(", ") : "–"}
                 </span>
                 <div className="flex gap-2">
-                  <button onClick={()=>startEdit(c)} disabled={!user} className={`bg-primary-100 hover:bg-primary-200 text-primary-700 px-3 py-2 rounded-lg font-medium transition-colors ${!user ? "opacity-50 cursor-not-allowed" : ""}`}>Ändra</button>
-                  <button onClick={()=>removeCompetition(c.id)} disabled={!user} className={`bg-red-100 hover:bg-red-200 text-red-700 px-3 py-2 rounded-lg font-medium transition-colors ${!user ? "opacity-50 cursor-not-allowed" : ""}`}>Ta bort</button>
+                  <button onClick={()=>startEdit(c)} disabled={!user} className={`bg-primary-100 hover:bg-primary-200 text-primary-700 px-3 py-2 rounded-lg font-medium transition-colors ${!user ? "opa[...]
+                  <button onClick={()=>removeCompetition(c.id)} disabled={!user} className={`bg-red-100 hover:bg-red-200 text-red-700 px-3 py-2 rounded-lg font-medium transition-colors ${!user ? "opac[...]
                 </div>
               </>
             )}
@@ -511,7 +511,7 @@
                 Namn: {confirmation.name}, Startnummer: {confirmation.startNumber}
               </span>
               <button onClick={() => setConfirmation(null)} className="absolute top-0 bottom-0 right-0 px-4 py-3">
-                <svg className="fill-current h-6 w-6 text-green-600" role="button" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><title>Close</title><path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z"/></svg>
+                <svg className="fill-current h-6 w-6 text-green-600" role="button" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><title>Close</title><path d="M14.348 14.849a1.2 1.2 0 0 1-1.69[...]
               </button>
             </div>
           )}
@@ -520,7 +520,7 @@
               className="border border-primary-300 p-3 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"/>
             <input value={club} onChange={e=>setClub(e.target.value)} placeholder="Ort"
               className="border border-primary-300 p-3 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"/>
-            <select value={klass} onChange={e=>setKlass(e.target.value)} className="border border-primary-300 p-3 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors">
+            <select value={klass} onChange={e=>setKlass(e.target.value)} className="border border-primary-300 p-3 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-col[...]
               <option>öppen</option>
               <option>dam</option>
               <option>veteran</option>
@@ -548,7 +548,7 @@
                       <option>junior med stöd</option>
                     </select>
                     <div className="flex gap-2">
-                      <button onClick={saveEdit} disabled={!user} className={`bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg font-medium transition-colors ${!user ? "opacity-50 cursor-not-allowed" : ""}`}>Spara</button>
+                      <button onClick={saveEdit} disabled={!user} className={`bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg font-medium transition-colors ${!user ? "opacity-50 cursor[...]
                       <button onClick={cancelEdit} className="bg-primary-200 hover:bg-primary-300 text-primary-700 px-3 py-2 rounded-lg font-medium transition-colors">Avbryt</button>
                     </div>
                   </>
@@ -558,8 +558,8 @@
                     <span className="flex-1 font-medium text-primary-800">{s.name} <span className="text-primary-600 font-normal">({s.club})</span></span>
                     <span className="bg-primary-200 text-primary-800 px-3 py-1 rounded-full text-sm font-medium">{s.klass}</span>
                     <div className="flex gap-2">
-                      <button onClick={()=>startEdit(s)} disabled={!user} className={`bg-primary-100 hover:bg-primary-200 text-primary-700 px-3 py-2 rounded-lg font-medium transition-colors ${!user ? "opacity-50 cursor-not-allowed" : ""}`}>Ändra</button>
-                      <button onClick={()=>removeShooter(s.id)} disabled={!user} className={`bg-red-100 hover:bg-red-200 text-red-700 px-3 py-2 rounded-lg font-medium transition-colors ${!user ? "opacity-50 cursor-not-allowed" : ""}`}>Ta bort</button>
+                      <button onClick={()=>startEdit(s)} disabled={!user} className={`bg-primary-100 hover:bg-primary-200 text-primary-700 px-3 py-2 rounded-lg font-medium transition-colors ${!user ? [...]
+                      <button onClick={()=>removeShooter(s.id)} disabled={!user} className={`bg-red-100 hover:bg-red-200 text-red-700 px-3 py-2 rounded-lg font-medium transition-colors ${!user ? "opac[...]
                     </div>
                   </>
                 )}
@@ -638,10 +638,13 @@
         Registrera poäng
       </h2>
       <div className="flex flex-col md:flex-row gap-4 mb-6">
-        <select value={competitionId} onChange={e => setCompetitionId(e.target.value)} className="border border-primary-300 p-3 rounded-lg flex-1 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors">
-          <option value="">Välj tävling</option>
-          {competitions.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-        </select>
+        <div className="flex-1">
+          <label className="block text-sm font-medium text-primary-700 mb-2">Tävling:</label>
+          <select value={competitionId} onChange={e => setCompetitionId(e.target.value)} className="border border-primary-300 p-3 rounded-lg w-full focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors">
+            <option value="">Välj tävling</option>
+            {competitions.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+          </select>
+        </div>
         <div>
           <label className="block text-sm font-medium text-primary-700 mb-2">Station:</label>
           <select value={station} onChange={e => setStation(Number(e.target.value))}
@@ -711,7 +714,7 @@
         ))}
       </div>
       <div className="text-lg font-semibold text-primary-800 mb-6 text-center bg-white p-4 rounded-lg border border-primary-200">
-        Summa: <span className="text-primary-700">{shots.reduce((a, b) => a + b.value, 0)} poäng</span>, 5¹/10¹or: <span className="text-primary-700">{shots.filter(s => s.femetta && (s.value === 5 || s.value === 10)).length}</span>
+        Summa: <span className="text-primary-700">{shots.reduce((a, b) => a + b.value, 0)} poäng</span>, 5¹/10¹or: <span className="text-primary-700">{shots.filter(s => s.femetta && (s.value === 5 [...]
       </div>
       <div className="text-center">
         <button onClick={saveScore}
@@ -998,62 +1001,4 @@ function CupResults({ shooters, scores, competitions }) {
 
   // Sortera skyttar per klass
   klassLista.forEach(k => {
-    if (grouped[k]) {
-      grouped[k].sort((a, b) => a.sumPlacings - b.sumPlacings);
-    }
-  });
-
-  return (
-    <section>
-      <h2 className="text-xl font-semibold mb-6 text-primary-800 flex items-center gap-3">
-        <AwardIcon className="w-6 h-6" />
-        Cupresultat (5 bästa av 7)
-      </h2>
-      {klassLista.map(klass => (
-        <div key={klass} className="mb-8">
-          <h3 className="text-lg font-semibold mb-4 capitalize text-primary-800 bg-primary-100 px-3 py-2 rounded-lg">{klass}</h3>
-          <div className="overflow-x-auto">
-            <table className="min-w-full border border-primary-200 rounded-lg text-sm bg-white">
-              <thead>
-                <tr className="bg-primary-100 border-b border-primary-200">
-                  <th className="p-3 text-left font-medium text-primary-800">Plats</th>
-                  <th className="p-3 text-left font-medium text-primary-800">Skytt</th>
-                  <th className="p-3 text-left font-medium text-primary-800">Ort</th>
-                  {competitionSorted.map(c => (
-                    <th key={c.id} className="p-3 text-left font-medium text-primary-800">{c.name}</th>
-                  ))}
-                  <th className="p-3 text-left font-medium text-primary-800">Summa</th>
-                </tr>
-              </thead>
-              <tbody>
-                {(grouped[klass] || []).length === 0 ? (
-                  <tr>
-                    <td colSpan={4 + competitionSorted.length} className="p-3 text-primary-500">Inga deltagare</td>
-                  </tr>
-                ) : (
-                  grouped[klass].map((s, i) => (
-                    <tr key={s.id} className="border-b border-primary-100 hover:bg-primary-50 transition-colors">
-                      <td className="p-3 font-medium">{i + 1}</td>
-                      <td className="p-3 font-medium text-primary-800">{s.name}</td>
-                      <td className="p-3 text-primary-600">{s.club}</td>
-                      {s.placings.map((p, idx) => (
-                        <td key={idx} className="p-3 font-mono text-primary-700">{p === 1000 ? "-" : p}</td>
-                      ))}
-                      <td className="p-3 font-bold text-primary-800">{s.sumPlacings}</td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      ))}
-    </section>
-  );
-}
-
-    ReactDOM.render(<App />, document.getElementById('app'));
-  </script>
-
-</body>
-</html>
+[...]
