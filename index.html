@@ -156,7 +156,14 @@
   <!-- Din app -->
   <script type="text/babel">
     const { db, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy, runTransaction, getDocs } = window.firestore;
-
+function useAuth() {
+  const [user, setUser] = React.useState(window.firebaseAuth.auth.currentUser);
+  React.useEffect(() => {
+    const unsub = window.firebaseAuth.auth.onAuthStateChanged(setUser);
+    return () => unsub && unsub();
+  }, []);
+  return user;
+}
     // SVG Icon Components
     // ... [Behåll dina CalendarIcon, UsersIcon, TrophyIcon, ClipboardIcon, AwardIcon här, som tidigare] ...
 
