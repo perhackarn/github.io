@@ -83,7 +83,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js";
     import {
       getFirestore, collection, addDoc, updateDoc, deleteDoc, doc,
-      onSnapshot, query, orderBy
+      onSnapshot, query, orderBy, runTransaction
     } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-firestore.js";
     import {
       getAuth,
@@ -148,14 +148,14 @@
     });
 
     window.firestore = {
-      db, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy
+      db, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy, runTransaction
     };
     window.firebaseAuth = { auth };
   </script>
 
   <!-- Din app -->
   <script type="text/babel">
-    const { db, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy } = window.firestore;
+    const { db, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy, runTransaction } = window.firestore;
 
     // SVG Icon Components
     const CalendarIcon = ({ className = "w-5 h-5" }) => (
@@ -424,116 +424,136 @@
 
     // --- Shooters ---
     function Shooters({ shooters, user }) {
-  const [search, setSearch] = React.useState("");
-  const filteredShooters = shooters.filter(s =>
-    s.name.toLowerCase().includes(search.toLowerCase()) ||
-    s.club.toLowerCase().includes(search.toLowerCase()) ||
-    String(s.startNumber).includes(search)
-  );
+      const [search, setSearch] = React.useState("");
+      const filteredShooters = shooters.filter(s =>
+        s.name.toLowerCase().includes(search.toLowerCase()) ||
+        s.club.toLowerCase().includes(search.toLowerCase()) ||
+        String(s.startNumber).includes(search)
+      );
 
-  const [name, setName] = React.useState("");
-  const [club, setClub] = React.useState("");
-  const [klass, setKlass] = React.useState("öppen");
+      const [name, setName] = React.useState("");
+      const [club, setClub] = React.useState("");
+      const [klass, setKlass] = React.useState("öppen");
 
-  const [editId, setEditId] = React.useState(null);
-  const [editName, setEditName] = React.useState("");
-  const [editClub, setEditClub] = React.useState("");
-  const [editKlass, setEditKlass] = React.useState("öppen");
+      const [editId, setEditId] = React.useState(null);
+      const [editName, setEditName] = React.useState("");
+      const [editClub, setEditClub] = React.useState("");
+      const [editKlass, setEditKlass] = React.useState("öppen");
 
-  const addShooter = async () => {
-    if (!user) return alert("Du måste vara inloggad!");
-    if (!name || !club) return;
-    const maxStartNumber = shooters.reduce((max, s) => Math.max(max, s.startNumber || 0), 0);
-    const startNumber = maxStartNumber + 1;
-    await addDoc(collection(db, "shooters"), { name, club, klass, startNumber });
-    setName(""); setClub("");
-  };
+      const addShooter = async () => {
+        if (!user) return alert("Du måste vara inloggad!");
+        if (!name || !club) return;
 
-  const startEdit = (s) => {
-    setEditId(s.id);
-    setEditName(s.name);
-    setEditClub(s.club);
-    setEditKlass(s.klass);
-  };
+        try {
+          await runTransaction(db, async (transaction) => {
+            const counterRef = doc(db, "counters", "shooter");
+            const counterDoc = await transaction.get(counterRef);
 
-  const saveEdit = async () => {
-    if (!user) return alert("Du måste vara inloggad!");
-    if (!editName || !editClub) return;
-    await updateDoc(doc(db, "shooters", editId), { name: editName, club: editClub, klass: editKlass });
-    setEditId(null); setEditName(""); setEditClub(""); setEditKlass("öppen");
-  };
+            if (!counterDoc.exists()) {
+              throw "Shooter counter document does not exist!";
+            }
 
-  const cancelEdit = () => {
-    setEditId(null); setEditName(""); setEditClub(""); setEditKlass("öppen");
-  };
+            const newStartNumber = counterDoc.data().currentNumber + 1;
+            
+            const newShooterRef = doc(collection(db, "shooters"));
+            
+            transaction.set(newShooterRef, { name, club, klass, startNumber: newStartNumber });
+            transaction.update(counterRef, { currentNumber: newStartNumber });
+          });
 
-  const removeShooter = async (id) => {
-    if (!user) return alert("Du måste vara inloggad!");
-    if (!window.confirm("Ta bort skytten?")) return;
-    await deleteDoc(doc(db, "shooters", id));
-  };
+          setName(""); 
+          setClub("");
+        } catch (e) {
+          console.error("Transaction failed: ", e);
+          alert("Kunde inte lägga till skytt, försök igen.");
+        }
+      };
 
-  return (
-    <section>
-      <h2 className="text-xl font-semibold mb-6 text-primary-800 flex items-center gap-3">
-        <UsersIcon className="w-6 h-6" />
-        Skyttar
-      </h2>
-      <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Sök skytt, ort eller startnummer..."
-        className="border border-primary-300 p-3 rounded-lg w-full mb-6 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"/>
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <input value={name} onChange={e=>setName(e.target.value)} placeholder="Namn"
-          className="border border-primary-300 p-3 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"/>
-        <input value={club} onChange={e=>setClub(e.target.value)} placeholder="Ort"
-          className="border border-primary-300 p-3 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"/>
-        <select value={klass} onChange={e=>setKlass(e.target.value)} className="border border-primary-300 p-3 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors bg-white">
-          <option>öppen</option>
-          <option>dam</option>
-          <option>veteran</option>
-          <option>ungdom</option>
-          <option>junior med stöd</option>
-        </select>
-        <button onClick={addShooter}
-          className={`bg-green-600 hover:bg-green-700 text-white px-4 py-3 rounded-lg font-medium transition-colors shadow-sm ${!user ? "opacity-50 cursor-not-allowed" : ""}`}
-          disabled={!user}>Lägg till</button>
-      </div>
-      {!user && <p className="text-red-600 text-sm mb-4 bg-red-50 p-3 rounded-lg border border-red-200">Logga in för att lägga till/ändra/tar bort skyttar.</p>}
-      <div className="space-y-1">
-        {filteredShooters.map(s=>
-          <div key={s.id} className="py-4 px-4 bg-primary-50 rounded-lg border border-primary-200 flex flex-col md:flex-row md:items-center justify-between gap-3">
-            {editId === s.id ? (
-              <>
-                <input value={editName} onChange={e=>setEditName(e.target.value)} className="border border-primary-300 p-2 rounded-lg flex-1 mb-2 md:mb-0"/>
-                <input value={editClub} onChange={e=>setEditClub(e.target.value)} className="border border-primary-300 p-2 rounded-lg flex-1 mb-2 md:mb-0"/>
-                <select value={editKlass} onChange={e=>setEditKlass(e.target.value)} className="border border-primary-300 p-2 rounded-lg flex-1 mb-2 md:mb-0">
-                  <option>öppen</option>
-                  <option>dam</option>
-                  <option>veteran</option>
-                  <option>ungdom</option>
-                  <option>junior med stöd</option>
-                </select>
-                <div className="flex gap-2">
-                  <button onClick={saveEdit} disabled={!user} className={`bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg font-medium transition-colors ${!user?"opacity-50 cursor-not-allowed" : ""}`}>Spara</button>
-                  <button onClick={cancelEdit} className="bg-primary-200 hover:bg-primary-300 text-primary-700 px-3 py-2 rounded-lg font-medium transition-colors">Avbryt</button>
-                </div>
-              </>
-            ) : (
-              <>
-                <span className="font-semibold text-primary-700 bg-primary-100 px-3 py-1 rounded-full text-sm">#{s.startNumber}</span>
-                <span className="flex-1 font-medium text-primary-800">{s.name} <span className="text-primary-600 font-normal">({s.club})</span></span>
-                <span className="bg-primary-200 text-primary-800 px-3 py-1 rounded-full text-sm font-medium">{s.klass}</span>
-                <div className="flex gap-2">
-                  <button onClick={()=>startEdit(s)} disabled={!user} className={`bg-primary-100 hover:bg-primary-200 text-primary-700 px-3 py-2 rounded-lg font-medium transition-colors ${!user?"opacity-50 cursor-not-allowed" : ""}`}>Ändra</button>
-                  <button onClick={()=>removeShooter(s.id)} disabled={!user} className={`bg-red-100 hover:bg-red-200 text-red-700 px-3 py-2 rounded-lg font-medium transition-colors ${!user?"opacity-50 cursor-not-allowed" : ""}`}>Ta bort</button>
-                </div>
-              </>
+      const startEdit = (s) => {
+        setEditId(s.id);
+        setEditName(s.name);
+        setEditClub(s.club);
+        setEditKlass(s.klass);
+      };
+
+      const saveEdit = async () => {
+        if (!user) return alert("Du måste vara inloggad!");
+        if (!editName || !editClub) return;
+        await updateDoc(doc(db, "shooters", editId), { name: editName, club: editClub, klass: editKlass });
+        setEditId(null); setEditName(""); setEditClub(""); setEditKlass("öppen");
+      };
+
+      const cancelEdit = () => {
+        setEditId(null); setEditName(""); setEditClub(""); setEditKlass("öppen");
+      };
+
+      const removeShooter = async (id) => {
+        if (!user) return alert("Du måste vara inloggad!");
+        if (!window.confirm("Ta bort skytten?")) return;
+        await deleteDoc(doc(db, "shooters", id));
+      };
+
+      return (
+        <section>
+          <h2 className="text-xl font-semibold mb-6 text-primary-800 flex items-center gap-3">
+            <UsersIcon className="w-6 h-6" />
+            Skyttar
+          </h2>
+          <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Sök skytt, ort eller startnummer..."
+            className="border border-primary-300 p-3 rounded-lg w-full mb-6 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"/>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <input value={name} onChange={e=>setName(e.target.value)} placeholder="Namn"
+              className="border border-primary-300 p-3 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"/>
+            <input value={club} onChange={e=>setClub(e.target.value)} placeholder="Ort"
+              className="border border-primary-300 p-3 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"/>
+            <select value={klass} onChange={e=>setKlass(e.target.value)} className="border border-primary-300 p-3 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors bg-white">
+              <option>öppen</option>
+              <option>dam</option>
+              <option>veteran</option>
+              <option>ungdom</option>
+              <option>junior med stöd</option>
+            </select>
+            <button onClick={addShooter}
+              className={`bg-green-600 hover:bg-green-700 text-white px-4 py-3 rounded-lg font-medium transition-colors shadow-sm ${!user ? "opacity-50 cursor-not-allowed" : ""}`}
+              disabled={!user}>Lägg till</button>
+          </div>
+          {!user && <p className="text-red-600 text-sm mb-4 bg-red-50 p-3 rounded-lg border border-red-200">Logga in för att lägga till/ändra/tar bort skyttar.</p>}
+          <div className="space-y-1">
+            {filteredShooters.map(s=>
+              <div key={s.id} className="py-4 px-4 bg-primary-50 rounded-lg border border-primary-200 flex flex-col md:flex-row md:items-center justify-between gap-3">
+                {editId === s.id ? (
+                  <>
+                    <input value={editName} onChange={e=>setEditName(e.target.value)} className="border border-primary-300 p-2 rounded-lg flex-1 mb-2 md:mb-0"/>
+                    <input value={editClub} onChange={e=>setEditClub(e.target.value)} className="border border-primary-300 p-2 rounded-lg flex-1 mb-2 md:mb-0"/>
+                    <select value={editKlass} onChange={e=>setEditKlass(e.target.value)} className="border border-primary-300 p-2 rounded-lg flex-1 mb-2 md:mb-0">
+                      <option>öppen</option>
+                      <option>dam</option>
+                      <option>veteran</option>
+                      <option>ungdom</option>
+                      <option>junior med stöd</option>
+                    </select>
+                    <div className="flex gap-2">
+                      <button onClick={saveEdit} disabled={!user} className={`bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg font-medium transition-colors ${!user?"opacity-50 cursor-not-allowed" : ""}`}>Spara</button>
+                      <button onClick={cancelEdit} className="bg-primary-200 hover:bg-primary-300 text-primary-700 px-3 py-2 rounded-lg font-medium transition-colors">Avbryt</button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <span className="font-semibold text-primary-700 bg-primary-100 px-3 py-1 rounded-full text-sm">#{s.startNumber}</span>
+                    <span className="flex-1 font-medium text-primary-800">{s.name} <span className="text-primary-600 font-normal">({s.club})</span></span>
+                    <span className="bg-primary-200 text-primary-800 px-3 py-1 rounded-full text-sm font-medium">{s.klass}</span>
+                    <div className="flex gap-2">
+                      <button onClick={()=>startEdit(s)} disabled={!user} className={`bg-primary-100 hover:bg-primary-200 text-primary-700 px-3 py-2 rounded-lg font-medium transition-colors ${!user?"opacity-50 cursor-not-allowed" : ""}`}>Ändra</button>
+                      <button onClick={()=>removeShooter(s.id)} disabled={!user} className={`bg-red-100 hover:bg-red-200 text-red-700 px-3 py-2 rounded-lg font-medium transition-colors ${!user?"opacity-50 cursor-not-allowed" : ""}`}>Ta bort</button>
+                    </div>
+                  </>
+                )}
+              </div>
             )}
           </div>
-        )}
-      </div>
-    </section>
-  );
-}
+        </section>
+      );
+    }
 
     // --- Scores ---
     function Scores({ shooters, competitions, user }) {
