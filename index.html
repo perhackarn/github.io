@@ -440,13 +440,24 @@
   const [editClub, setEditClub] = React.useState("");
   const [editKlass, setEditKlass] = React.useState("öppen");
 
-  const addShooter = async () => {
-    if (!user) return alert("Du måste vara inloggad!");
-    if (!name || !club) return;
-    const startNumber = shooters.length + 1;
+ 
+      import { runTransaction, doc, addDoc, collection } from "firebase/firestore";
+
+async function addShooter({ name, club, klass }) {
+  if (!name || !club) return alert("Fyll i namn och ort!");
+  const counterDocRef = doc(db, "meta", "nextStartNumber");
+  await runTransaction(db, async (transaction) => {
+    const counterDoc = await transaction.get(counterDocRef);
+    let startNumber = 1;
+    if (counterDoc.exists()) {
+      startNumber = counterDoc.data().value;
+    }
+    // Skriv skytten med detta startnummer
     await addDoc(collection(db, "shooters"), { name, club, klass, startNumber });
-    setName(""); setClub("");
-  };
+    // Uppdatera counter
+    transaction.update(counterDocRef, { value: startNumber + 1 });
+  });
+}
 
   const startEdit = (s) => {
     setEditId(s.id);
